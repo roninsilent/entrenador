@@ -2,102 +2,354 @@
 <html lang="ca">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Zenkai Performance Tracker - Torso/Cama & Drive Sync</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#a3a19b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Entrenador">
+  <title>Entrenador</title>
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/icon-64.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/icon-32.png">
+  <link rel="apple-touch-icon" href="assets/icon-180.png">
   <style>
+    @font-face { font-family: "Barlow Condensed"; src: url("assets/fonts/barlow-condensed-500.woff") format("woff"); font-weight: 500; font-display: swap; }
+    @font-face { font-family: "Barlow Condensed"; src: url("assets/fonts/barlow-condensed-600.woff") format("woff"); font-weight: 600; font-display: swap; }
+    @font-face { font-family: "Barlow Condensed"; src: url("assets/fonts/barlow-condensed-800.woff") format("woff"); font-weight: 800; font-display: swap; }
+    @font-face { font-family: "Permanent Marker"; src: url("assets/fonts/permanent-marker-400.woff") format("woff"); font-weight: 400; font-display: swap; }
+
     :root {
-      --bg-color: #0b1120;
-      --card-bg: #1e293b;
-      --card-border: #334155;
-      --accent: #38bdf8;
-      --accent-glow: rgba(56, 189, 248, 0.25);
-      --accent-hover: #0284c7;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --success: #10b981;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --input-bg: #0f172a;
+      --concrete: #a3a19b;
+      --charcoal: #1d1c1a;
+      --graphite: #3f3d3a;
+      --iron: #262523;
+      --iron-well: #171614;
+      --iron-edge: #3d3b38;
+      --chalk: #ece9e2;
+      --chalk-dim: #a5a29b;
+      --orange: #e8661a;
+      --orange-deep: #b8500f;
+      --wrap: 1040px;
+      --dock-h: 72px;
+      --ui: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+      --hand: "Permanent Marker", "Marker Felt", "Comic Sans MS", cursive;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: var(--bg-color); color: var(--text-main); padding: 16px; max-width: 1100px; margin: 0 auto; line-height: 1.5; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: var(--ui);
+      font-weight: 500;
+      font-size: 1.0625rem;
+      line-height: 1.35;
+      color: var(--charcoal);
+      background-color: var(--concrete);
+      min-height: 100vh;
+      padding-bottom: calc(var(--dock-h) + env(safe-area-inset-bottom) + 32px);
+    }
+    /* Formigó: gra fi, porus i taques verticals, fixat darrere del contingut */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='280'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='2' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .08 0 0 0 0 .08 0 0 0 0 .07 22 0 0 0 -15.6'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .1 0 0 0 0 .09 0 0 0 -.55 .36'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1000' height='1000' preserveAspectRatio='none'%3E%3Cfilter id='s' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012 .0025' numOctaves='4' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 .12 0 0 0 0 .12 0 0 0 0 .11 1.5 0 0 0 -.72'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E"),
+        radial-gradient(80% 55% at 100% 100%, rgba(0, 0, 0, .12), transparent 70%);
+      background-size: 280px 280px, 220px 220px, 100% 100%, 100% 100%;
+      background-repeat: repeat, repeat, no-repeat, no-repeat;
+    }
 
-    header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; padding-bottom: 16px; margin-bottom: 20px; border-bottom: 2px solid var(--card-border); gap: 12px; }
-    .brand-title { font-size: 1.5rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: -0.02em; }
-    .phase-badge { background: rgba(56, 189, 248, 0.1); border: 1px solid var(--accent); color: var(--accent); padding: 4px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    :focus-visible { outline: 3px solid var(--charcoal); outline-offset: 2px; }
+    .ex :focus-visible, .dock :focus-visible { outline-color: var(--orange); }
 
-    .timer-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 16px; margin-bottom: 20px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-    .timer-display { font-family: monospace; font-size: 2.2rem; font-weight: 800; color: var(--accent); background: var(--input-bg); padding: 4px 16px; border-radius: 8px; border: 1px solid var(--card-border); min-width: 130px; text-align: center; }
+    button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    input { font: inherit; color: inherit; }
 
-    .nav-tabs { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 6px; }
-    .tab-btn { background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-muted); padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.9rem; white-space: nowrap; transition: all 0.2s; }
-    .tab-btn.active { background: var(--accent); border-color: var(--accent); color: #000; box-shadow: 0 0 12px var(--accent-glow); }
+    /* Capçalera */
+    .masthead {
+      display: grid;
+      justify-items: center;
+      padding: max(12px, env(safe-area-inset-top)) 16px 0;
+      text-align: center;
+      position: relative;
+    }
+    /* Halo clar perquè el formigó del logo es fongui amb el de la pàgina */
+    .masthead::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: min(100vw, 640px);
+      height: min(110vw, 580px);
+      transform: translateX(-50%);
+      background: radial-gradient(closest-side, rgba(226, 224, 218, .55), rgba(226, 224, 218, .2) 70%, transparent);
+      z-index: -1;
+      pointer-events: none;
+    }
+    .logo {
+      display: block;
+      width: min(80vw, 360px);
+      height: auto;
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent), linear-gradient(180deg, transparent, #000 7%, #000 93%, transparent);
+      -webkit-mask-composite: source-in;
+      mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent), linear-gradient(180deg, transparent, #000 7%, #000 93%, transparent);
+      mask-composite: intersect;
+    }
+    .phase { margin-top: 4px; font-weight: 600; font-size: 1.125rem; }
+    .rule { max-width: 34ch; margin-top: 2px; font-size: .95rem; color: var(--graphite); }
 
-    .workout-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 20px; margin-bottom: 24px; }
-    .exercise-table { width: 100%; border-collapse: collapse; margin-top: 8px; min-width: 650px; }
-    .exercise-table th { text-align: left; padding: 10px 8px; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; border-bottom: 1px solid var(--card-border); }
-    .exercise-table td { padding: 12px 8px; border-bottom: 1px solid var(--card-border); vertical-align: middle; }
+    /* Dies */
+    .days {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      max-width: 560px;
+      margin: 22px auto 0;
+      padding: 0 16px;
+    }
+    .day {
+      display: grid;
+      gap: 2px;
+      justify-items: center;
+      align-content: center;
+      min-height: 58px;
+      padding: 8px 2px 7px;
+      background: transparent;
+      border: 2px solid var(--charcoal);
+      border-radius: 6px;
+    }
+    .day-abbr { font-weight: 800; font-size: 1.375rem; line-height: 1; }
+    .day-name { font-weight: 600; font-size: .875rem; line-height: 1.1; }
+    .day.is-today .day-abbr { text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 3px; }
+    .day[aria-pressed="true"] { background: var(--orange); box-shadow: 0 3px 0 var(--charcoal); }
+    @media (hover: hover) { .day:not([aria-pressed="true"]):hover { background: rgba(29, 28, 26, .08); } }
 
-    input[type="number"], select { background: var(--input-bg); border: 1px solid var(--card-border); color: var(--text-main); padding: 8px 10px; border-radius: 6px; width: 75px; font-weight: 600; font-size: 0.9rem; outline: none; }
-    input[type="number"]:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 5px var(--accent-glow); }
+    /* Sessió */
+    .session { max-width: var(--wrap); margin: 30px auto 0; padding: 0 16px; }
+    .session-head { margin-bottom: 18px; }
+    .session-day { font-weight: 600; font-size: 1rem; color: var(--graphite); }
+    .session-title { font-weight: 800; font-size: clamp(2.75rem, 12vw, 4rem); line-height: .86; text-transform: uppercase; letter-spacing: -.005em; }
+    .session-focus {
+      max-width: 32ch;
+      margin-top: 10px;
+      font-family: var(--hand);
+      font-size: 1.15rem;
+      line-height: 1.3;
+      transform: rotate(-1.2deg);
+      transform-origin: left center;
+    }
 
-    .btn { background: var(--accent); color: #000; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-    .btn:hover { background: var(--accent-hover); color: #fff; }
-    .btn-secondary { background: var(--input-bg); border: 1px solid var(--card-border); color: var(--text-main); }
-    .btn-secondary:hover { background: var(--card-border); }
-    .btn-drive { background: #137333; color: #fff; border: 1px solid #1e8e3e; }
-    .btn-drive:hover { background: #1e8e3e; }
+    .exercises {
+      list-style: none;
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr));
+      align-items: start;
+    }
+    .ex {
+      display: grid;
+      gap: 14px;
+      padding: 14px 14px 12px;
+      background: var(--iron);
+      color: var(--chalk);
+      border-radius: 6px;
+      border-top: 4px solid var(--iron-edge);
+      box-shadow: 0 3px 0 var(--charcoal);
+    }
+    .ex.is-up { border-top-color: var(--orange); }
+    .ex-head { display: grid; grid-template-columns: 1.4rem 1fr; gap: 8px; align-items: baseline; }
+    .ex-num { font-weight: 800; font-size: 1.125rem; color: var(--chalk-dim); font-variant-numeric: tabular-nums; }
+    .ex-name { font-weight: 600; font-size: 1.25rem; line-height: 1.15; }
+    .ex-target { font-size: .95rem; color: var(--chalk-dim); }
 
-    .progression-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
-    .badge-up { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid var(--success); }
-    .badge-keep { background: rgba(245, 158, 11, 0.2); color: var(--warning); border: 1px solid var(--warning); }
-    .footer-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+    .field-label { font-weight: 600; font-size: .9rem; color: var(--chalk-dim); }
+
+    .sets, .weight, .rir { display: grid; gap: 4px; }
+    .set-boxes { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 6px; }
+    .num {
+      width: 100%;
+      height: 50px;
+      background: var(--iron-well);
+      border: 2px solid var(--iron-edge);
+      border-radius: 4px;
+      text-align: center;
+      font-weight: 800;
+      font-size: 1.5rem;
+      font-variant-numeric: tabular-nums;
+      color: var(--chalk);
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+    .num::-webkit-outer-spin-button, .num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .num::placeholder { color: #57544f; font-weight: 600; font-size: 1.1rem; }
+    .num:focus { border-color: var(--chalk-dim); outline: none; }
+    .num:focus-visible { outline: 3px solid var(--orange); outline-offset: 1px; }
+    .num.is-max { border-color: var(--orange); color: var(--orange); }
+
+    .load { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: end; justify-content: space-between; }
+    .weight-row { display: flex; align-items: center; gap: 6px; }
+    .weight .num { width: 80px; height: 46px; font-size: 1.375rem; }
+    .unit { font-weight: 600; color: var(--chalk-dim); }
+    .rir-opts { display: flex; gap: 5px; }
+    .rir label { position: relative; }
+    .rir input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+    .rir span.opt {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 46px;
+      border: 2px solid var(--iron-edge);
+      border-radius: 4px;
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: var(--chalk-dim);
+    }
+    .rir input:checked + span.opt { background: var(--chalk); border-color: var(--chalk); color: var(--charcoal); }
+    .rir input:focus-visible + span.opt { outline: 3px solid var(--orange); outline-offset: 2px; }
+
+    .ex-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; }
+    .rest-btn {
+      height: 44px;
+      padding: 0 14px;
+      background: transparent;
+      border: 2px solid var(--iron-edge);
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--chalk);
+      font-variant-numeric: tabular-nums;
+    }
+    @media (hover: hover) { .rest-btn:hover { border-color: var(--chalk-dim); } }
+    .verdict { display: flex; align-items: center; gap: 6px; text-align: right; font-weight: 600; font-size: 1rem; color: var(--chalk-dim); }
+    .verdict svg { display: none; width: 30px; height: 22px; flex: none; }
+    .ex.is-up .verdict { font-family: var(--hand); font-weight: 400; font-size: 1.2rem; color: var(--orange); }
+    .ex.is-up .verdict svg { display: block; }
+    .ex.is-up .verdict path { stroke-dasharray: 60; stroke-dashoffset: 0; animation: draw .5s ease-out; }
+    @keyframes draw { from { stroke-dashoffset: 60; } }
+
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+    .btn {
+      min-height: 50px;
+      padding: 0 20px;
+      border: 2px solid var(--charcoal);
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 1.125rem;
+      box-shadow: 0 3px 0 var(--charcoal);
+    }
+    .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--charcoal); }
+    .btn-primary { background: var(--orange); color: var(--charcoal); }
+    .btn-dark { background: var(--charcoal); color: var(--chalk); }
+    .storage-note { max-width: 46ch; margin-top: 12px; font-size: .95rem; color: var(--graphite); }
+
+    /* Cronòmetre fix a baix */
+    .dock {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 10;
+      background: var(--iron);
+      color: var(--chalk);
+      border-top: 2px solid var(--charcoal);
+      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+    }
+    .dock-progress { position: absolute; left: 0; top: -2px; height: 4px; width: 100%; background: var(--orange); transform-origin: left; transform: scaleX(0); }
+    .dock-inner { max-width: var(--wrap); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .dock-time { display: grid; line-height: 1; }
+    .dock-label { font-weight: 600; font-size: .85rem; color: var(--chalk-dim); }
+    .dock-clock { font-weight: 800; font-size: 2.1rem; font-variant-numeric: tabular-nums; letter-spacing: .01em; }
+    .dock.is-running .dock-clock { color: var(--orange); }
+    .dock.is-done .dock-clock { animation: blink .4s steps(2) 4; }
+    @keyframes blink { 50% { opacity: .2; } }
+    .presets { display: flex; gap: 6px; }
+    .preset {
+      min-width: 44px;
+      height: 46px;
+      padding: 0 6px;
+      background: transparent;
+      border: 2px solid var(--iron-edge);
+      border-radius: 4px;
+      font-weight: 800;
+      font-size: 1.05rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .preset.stop { display: grid; place-items: center; }
+    .preset.stop::before { content: ""; width: 14px; height: 14px; background: currentColor; border-radius: 2px; }
+    @media (hover: hover) { .preset:hover { border-color: var(--chalk-dim); } }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(var(--dock-h) + env(safe-area-inset-bottom) + 14px);
+      z-index: 11;
+      width: max-content;
+      max-width: calc(100vw - 32px);
+      padding: 12px 16px;
+      background: var(--charcoal);
+      color: var(--chalk);
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 1.05rem;
+      transform: translate(-50%, 12px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s, transform .2s;
+    }
+    .toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (min-width: 720px) {
+      .logo { width: 380px; }
+      .session-head { display: grid; grid-template-columns: auto 1fr; column-gap: 28px; align-items: end; }
+      .session-day { grid-column: 1 / -1; }
+      .session-focus { margin: 0 0 6px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
   </style>
 </head>
 <body>
 
-  <header>
-    <div>
-      <div class="brand-title">ZENKAI PERFORMANCE TRACKER</div>
-      <div class="phase-badge">Fase 1: Re-adaptació Neural & Hipertròfia</div>
-    </div>
-    <div style="font-size: 0.85rem; color: var(--text-muted); text-align: right;">
-      Doble Progressió & Sincronització Drive
-    </div>
+  <header class="masthead">
+    <h1 class="sr-only">Entrenador</h1>
+    <img class="logo" src="assets/logo.jpg" width="720" height="668" alt="Entrenador, fitness &amp; strength">
+    <p class="phase">Fase 1: readaptació neural i hipertròfia</p>
+    <p class="rule">Quan totes les sèries arriben al màxim de repeticions, toca pujar el pes.</p>
   </header>
 
-  <!-- Timer Card -->
-  <div class="timer-card">
-    <div>
-      <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Cronòmetre de Descans</div>
-      <div class="timer-display" id="timer">00:00</div>
-    </div>
-    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-      <button class="btn btn-secondary" onclick="startTimer(60)">60s</button>
-      <button class="btn btn-secondary" onclick="startTimer(90)">90s</button>
-      <button class="btn btn-secondary" onclick="startTimer(120)">2 min</button>
-      <button class="btn btn-secondary" onclick="startTimer(180)">3 min</button>
-      <button class="btn btn-secondary" style="color: var(--danger); border-color: var(--danger);" onclick="stopTimer()">Atura</button>
-    </div>
-  </div>
+  <nav class="days" id="days" aria-label="Sessions de la setmana"></nav>
 
-  <!-- Navigation -->
-  <div class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('torsoA')">Dilluns: Torso A</button>
-    <button class="tab-btn" onclick="switchTab('camaA')">Dimarts: Cama A</button>
-    <button class="tab-btn" onclick="switchTab('torsoB')">Dijous: Torso B</button>
-    <button class="tab-btn" onclick="switchTab('camaB')">Divendres: Cama B</button>
-    <button class="tab-btn" onclick="switchTab('recuperacio')">Dimecres: Recuperació Activa</button>
-  </div>
+  <main class="session" id="session"></main>
 
-  <div id="workout-content"></div>
+  <section class="dock" id="dock" aria-label="Cronòmetre de descans">
+    <div class="dock-progress" id="timer-progress"></div>
+    <div class="dock-inner">
+      <div class="dock-time">
+        <span class="dock-label">Descans</span>
+        <span class="dock-clock" id="timer" role="timer" aria-live="off">00:00</span>
+      </div>
+      <div class="presets">
+        <button class="preset" data-rest="60">1:00</button>
+        <button class="preset" data-rest="90">1:30</button>
+        <button class="preset" data-rest="120">2:00</button>
+        <button class="preset" data-rest="180">3:00</button>
+        <button class="preset stop" id="timer-stop" aria-label="Atura el cronòmetre"></button>
+      </div>
+    </div>
+  </section>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
     const routineData = {
       torsoA: {
         title: "Dilluns: Torso A",
-        focus: "Empenta Horitzontal + Tirada Controlada",
+        focus: "Empenta horitzontal + tirada controlada",
         exercises: [
           { name: "Press de banca amb barra", series: 3, targetReps: "8-10", maxReps: 10, rest: 120, defaultWeight: 50 },
           { name: "Rem amb barra (prono/supí)", series: 3, targetReps: "8-10", maxReps: 10, rest: 90, defaultWeight: 40 },
@@ -108,18 +360,18 @@
       },
       camaA: {
         title: "Dimarts: Cama A",
-        focus: "Dominant Genoll + Flexió Maluc",
+        focus: "Dominant genoll + flexió de maluc",
         exercises: [
           { name: "Goblet Squat / Z-Squat (excèntrica lenta)", series: 3, targetReps: "10-12", maxReps: 12, rest: 100, defaultWeight: 18 },
           { name: "Pes mort romanès (RDL)", series: 3, targetReps: "8-10", maxReps: 10, rest: 120, defaultWeight: 50 },
-          { name: "Zancadas posteriors amb manuelles", series: 3, targetReps: "10/cama", maxReps: 10, rest: 90, defaultWeight: 10 },
+          { name: "Gambades posteriors amb manuelles", series: 3, targetReps: "10/cama", maxReps: 10, rest: 90, defaultWeight: 10 },
           { name: "Curl femoral amb goma o TRX", series: 3, targetReps: "12-15", maxReps: 15, rest: 60, defaultWeight: 0 },
           { name: "Roda d'abdominals (des de genolls)", series: 3, targetReps: "8-10", maxReps: 10, rest: 60, defaultWeight: 0 }
         ]
       },
       torsoB: {
         title: "Dijous: Torso B",
-        focus: "Tirada Vertical + Empenta Vertical/Inclinada",
+        focus: "Tirada vertical + empenta vertical i inclinada",
         exercises: [
           { name: "Rem invertit TRX / Rem 1 mà manuella", series: 3, targetReps: "8-10", maxReps: 10, rest: 90, defaultWeight: 16 },
           { name: "Press inclinat amb manuelles (30°)", series: 3, targetReps: "10-12", maxReps: 12, rest: 90, defaultWeight: 16 },
@@ -130,198 +382,200 @@
       },
       camaB: {
         title: "Divendres: Cama B",
-        focus: "Cadena Posterior + Estabilitat Core",
+        focus: "Cadena posterior + estabilitat del core",
         exercises: [
           { name: "Pes mort convencional amb barra", series: 3, targetReps: "6-8", maxReps: 8, rest: 150, defaultWeight: 60 },
           { name: "Bulgarian Split Squat", series: 3, targetReps: "10/cama", maxReps: 10, rest: 90, defaultWeight: 10 },
           { name: "Hip Thrust amb barra o kettlebell", series: 3, targetReps: "10-12", maxReps: 12, rest: 90, defaultWeight: 40 },
           { name: "Elevació de talons per bessons (1 cama)", series: 4, targetReps: "15", maxReps: 15, rest: 45, defaultWeight: 10 },
-          { name: "Plancha TRX / Pallof press amb goma", series: 3, targetReps: "30s", maxReps: 30, rest: 60, defaultWeight: 0 }
+          { name: "Planxa TRX / Pallof press amb goma", series: 3, targetReps: "30s", maxReps: 30, rest: 60, defaultWeight: 0 }
         ]
       },
       recuperacio: {
         title: "Dimecres / Cap de Setmana: Recuperació Activa",
-        focus: "Descompressió Espinal, Mobilitat d'Oficina & LISS",
+        focus: "Descompressió espinal, mobilitat d'oficina i LISS",
         exercises: [
           { name: "Corda suau / LISS (10-15 minuts)", series: 1, targetReps: "15 min", maxReps: 15, rest: 60, defaultWeight: 0 },
-          { name: "Rutina Mobilitat Espatlles/TRX + Obertura Malucs", series: 1, targetReps: "15 min", maxReps: 15, rest: 60, defaultWeight: 0 }
+          { name: "Rutina mobilitat espatlles/TRX + obertura malucs", series: 1, targetReps: "15 min", maxReps: 15, rest: 60, defaultWeight: 0 }
         ]
       }
     };
 
-    let activeTab = 'torsoA';
-    let timerInterval = null;
+    // Ordre de la setmana i textos curts de cada dia
+    const days = [
+      { key: "torsoA",      abbr: "Dl", short: "Torso A", day: "Dilluns",                    name: "Torso A" },
+      { key: "camaA",       abbr: "Dt", short: "Cama A",  day: "Dimarts",                    name: "Cama A" },
+      { key: "recuperacio", abbr: "Dc", short: "Recup.",  day: "Dimecres i cap de setmana",  name: "Recuperació activa", noLoad: true },
+      { key: "torsoB",      abbr: "Dj", short: "Torso B", day: "Dijous",                     name: "Torso B" },
+      { key: "camaB",       abbr: "Dv", short: "Cama B",  day: "Divendres",                  name: "Cama B" }
+    ];
+    const todayKey = ["recuperacio", "torsoA", "camaA", "recuperacio", "torsoB", "camaB", "recuperacio"][new Date().getDay()];
+    let activeTab = todayKey;
 
-    function startTimer(seconds) {
-      clearInterval(timerInterval);
-      let timeLeft = seconds;
-      updateTimerDisplay(timeLeft);
-      timerInterval = setInterval(() => {
-        timeLeft--;
-        updateTimerDisplay(timeLeft);
-        if (timeLeft <= 0) {
-          clearInterval(timerInterval);
-          alert('⏰ Descans finalitzat! Torna a la barra amb concentració.');
-        }
-      }, 1000);
+    const $ = (sel) => document.querySelector(sel);
+    const dayInfo = (key) => days.find(d => d.key === key);
+
+    // ---------- Dades desades (mateix format i claus que la versió anterior) ----------
+    function readStore(tabKey) {
+      try { return JSON.parse(localStorage.getItem(`zenkai_${tabKey}`)) || []; } catch (e) { return []; }
+    }
+    function getSavedData(tabKey, exIdx) {
+      return readStore(tabKey)[exIdx] || {};
     }
 
-    function stopTimer() {
-      clearInterval(timerInterval);
-      updateTimerDisplay(0);
+    // ---------- Format ----------
+    function clock(sec) {
+      const m = Math.floor(sec / 60), s = sec % 60;
+      return `${m}:${String(s).padStart(2, "0")}`;
+    }
+    function targetText(ex) {
+      const t = ex.targetReps;
+      if (/min$/.test(t)) return `${ex.series} × ${t}`;
+      if (/^\d+s$/.test(t)) return `${ex.series} × ${t.replace("s", " s")}`;
+      if (t.includes("/cama")) return `${ex.series} × ${t.replace("/cama", "")} reps per cama`;
+      return `${ex.series} × ${t.replace("-", "–")} reps`;
     }
 
-    function updateTimerDisplay(seconds) {
-      const mins = Math.floor(seconds / 60);
-      const secs = seconds % 60;
-      document.getElementById('timer').textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
-
-    function switchTab(tabKey) {
-      activeTab = tabKey;
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
-      renderWorkout();
-    }
-
-    function checkProgression(exIndex) {
-      const ex = routineData[activeTab].exercises[exIndex];
-      let allMaxed = true;
-      for (let s = 1; s <= ex.series; s++) {
-        const repsInput = document.getElementById(`reps_${exIndex}_${s}`);
-        if (!repsInput || parseInt(repsInput.value) < ex.maxReps) {
-          allMaxed = false;
-          break;
-        }
-      }
-      const badgeEl = document.getElementById(`badge_${exIndex}`);
-      if (badgeEl) {
-        if (allMaxed) {
-          badgeEl.className = "progression-badge badge-up";
-          badgeEl.textContent = "SOBRECÀRREGA: Puja +2.5kg";
-        } else {
-          badgeEl.className = "progression-badge badge-keep";
-          badgeEl.textContent = "MANTÉN PES";
-        }
-      }
+    // ---------- Pintar ----------
+    function renderDays() {
+      $("#days").innerHTML = days.map(d => `
+        <button class="day${d.key === todayKey ? " is-today" : ""}" data-key="${d.key}" aria-pressed="${d.key === activeTab}"
+                aria-label="${d.day}: ${d.name}${d.key === todayKey ? " (avui)" : ""}">
+          <span class="day-abbr">${d.abbr}</span>
+          <span class="day-name">${d.short}</span>
+        </button>`).join("");
     }
 
     function renderWorkout() {
       const data = routineData[activeTab];
-      const container = document.getElementById('workout-content');
+      const info = dayInfo(activeTab);
+      const saved = readStore(activeTab);
 
-      let html = `
-        <div class="workout-card">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
-            <div>
-              <div style="font-size: 1.25rem; font-weight: 700;">${data.title}</div>
-              <div style="font-size: 0.85rem; color: var(--text-muted);">${data.focus}</div>
+      const cards = data.exercises.map((ex, i) => {
+        const s = saved[i] || {};
+        const weight = s.weight || ex.defaultWeight;
+        const rir = s.rir !== undefined && s.rir !== "" ? String(s.rir) : "2";
+        const reps = Array.from({ length: ex.series }, (_, k) => {
+          const v = s.reps ? (s.reps[k] ?? "") : "";
+          return `<input class="num" type="number" inputmode="numeric" min="0" id="reps_${i}_${k + 1}" data-ex="${i}"
+                    placeholder="${k + 1}" value="${v}" aria-label="${ex.name}, sèrie ${k + 1}">`;
+        }).join("");
+
+        const load = info.noLoad ? "" : `
+          <div class="load">
+            <label class="weight">
+              <span class="field-label">Pes</span>
+              <span class="weight-row">
+                <input class="num" type="number" inputmode="decimal" step="0.5" min="0" id="weight_${i}" data-ex="${i}" value="${weight}">
+                <span class="unit">kg</span>
+              </span>
+            </label>
+            <div class="rir" role="radiogroup" aria-label="RIR real, ${ex.name}">
+              <span class="field-label" aria-hidden="true">RIR real</span>
+              <span class="rir-opts">${["3", "2", "1", "0"].map(v => `
+                <label><input type="radio" name="rir_${i}" value="${v}"${v === rir ? " checked" : ""} aria-label="RIR ${v}"><span class="opt" aria-hidden="true">${v}</span></label>`).join("")}
+              </span>
             </div>
-            <button class="btn btn-secondary" onclick="saveData()">Desa Localment</button>
-          </div>
-          <div style="overflow-x: auto;">
-            <table class="exercise-table">
-              <thead>
-                <tr>
-                  <th>Exercici</th>
-                  <th>Pes (kg)</th>
-                  <th>Sèries & Reps</th>
-                  <th>RIR Real</th>
-                  <th>Descans</th>
-                  <th>Estat Progressió</th>
-                </tr>
-              </thead>
-              <tbody>
-      `;
+          </div>`;
 
-      data.exercises.forEach((ex, exIdx) => {
-        const savedData = getSavedData(activeTab, exIdx);
-        html += `
-          <tr>
-            <td>
-              <div style="font-weight: 600;">${ex.name}</div>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">${ex.series} Sèries x ${ex.targetReps} reps</div>
-            </td>
-            <td>
-              <input type="number" id="weight_${exIdx}" value="${savedData.weight || ex.defaultWeight}" step="0.5" onchange="checkProgression(${exIdx})">
-            </td>
-            <td>
-              <div style="display: flex; gap: 6px;">
-        `;
-
-        for (let s = 1; s <= ex.series; s++) {
-          const val = savedData.reps ? savedData.reps[s-1] : '';
-          html += `<input type="number" id="reps_${exIdx}_${s}" placeholder="S${s}" value="${val}" oninput="checkProgression(${exIdx})">`;
-        }
-
-        html += `
+        return `
+          <li class="ex" id="ex_${i}">
+            <div class="ex-head">
+              <span class="ex-num" aria-hidden="true">${i + 1}</span>
+              <div>
+                <h3 class="ex-name">${ex.name}</h3>
+                <p class="ex-target">${targetText(ex)}</p>
               </div>
-            </td>
-            <td>
-              <select id="rir_${exIdx}">
-                <option value="3" ${savedData.rir == 3 ? 'selected' : ''}>RIR 3</option>
-                <option value="2" ${savedData.rir == 2 || !savedData.rir ? 'selected' : ''}>RIR 2</option>
-                <option value="1" ${savedData.rir == 1 ? 'selected' : ''}>RIR 1</option>
-                <option value="0" ${savedData.rir == 0 ? 'selected' : ''}>RIR 0</option>
-              </select>
-            </td>
-            <td>
-              <button class="btn btn-secondary" onclick="startTimer(${ex.rest})">⏱️ ${ex.rest}s</button>
-            </td>
-            <td>
-              <span id="badge_${exIdx}" class="progression-badge badge-keep">MANTÉN PES</span>
-            </td>
-          </tr>
-        `;
-      });
+            </div>
+            <div class="sets">
+              <span class="field-label">Repeticions</span>
+              <div class="set-boxes" style="--n:${ex.series}">${reps}</div>
+            </div>
+            ${load}
+            <div class="ex-foot">
+              <button class="rest-btn" data-rest="${ex.rest}">Descans ${clock(ex.rest)}</button>
+              <p class="verdict" id="badge_${i}">
+                <svg viewBox="0 0 30 22" aria-hidden="true"><path d="M2 20 L11 11 L15 15 L27 3 M19 3 H27 V11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span></span>
+              </p>
+            </div>
+          </li>`;
+      }).join("");
 
-      html += `
-              </tbody>
-            </table>
-          </div>
-          <div class="footer-actions">
-            <button class="btn" onclick="saveData()">💾 Desa Registre Local</button>
-            <button class="btn btn-drive" onclick="exportToCSV()">📂 Exporta CSV per a Google Drive</button>
-          </div>
+      $("#session").innerHTML = `
+        <div class="session-head">
+          <p class="session-day">${info.day}</p>
+          <h2 class="session-title">${info.name}</h2>
+          <p class="session-focus">${data.focus}</p>
         </div>
-      `;
+        <ol class="exercises">${cards}</ol>
+        <div class="actions">
+          <button class="btn btn-primary" id="save-btn">Desa la sessió</button>
+          <button class="btn btn-dark" id="csv-btn">Exporta a CSV</button>
+        </div>
+        <p class="storage-note">Les dades es desen només en aquest navegador. Exporta el CSV per guardar-les a Google Drive.</p>`;
 
-      container.innerHTML = html;
-      data.exercises.forEach((_, idx) => checkProgression(idx));
+      data.exercises.forEach((_, i) => checkProgression(i, false));
     }
 
+    // ---------- Doble progressió ----------
+    function checkProgression(exIdx, animate = true) {
+      const ex = routineData[activeTab].exercises[exIdx];
+      const info = dayInfo(activeTab);
+      let allMaxed = true;
+      for (let s = 1; s <= ex.series; s++) {
+        const input = document.getElementById(`reps_${exIdx}_${s}`);
+        const hit = input && input.value !== "" && parseInt(input.value, 10) >= ex.maxReps;
+        input.classList.toggle("is-max", hit);
+        if (!hit) allMaxed = false;
+      }
+
+      const card = document.getElementById(`ex_${exIdx}`);
+      const label = document.querySelector(`#badge_${exIdx} span`);
+      const wasUp = card.classList.contains("is-up");
+      card.classList.toggle("is-up", allMaxed);
+
+      if (info.noLoad) {
+        label.textContent = allMaxed ? "Fet" : "";
+      } else if (allMaxed) {
+        const w = parseFloat(document.getElementById(`weight_${exIdx}`).value) || 0;
+        label.textContent = w > 0 ? "Puja 2,5 kg" : "Puja la dificultat";
+      } else {
+        label.textContent = "Mantén el pes";
+      }
+
+      // Redibuixa la fletxa només quan s'acaba d'aconseguir
+      if (allMaxed && !wasUp && animate) {
+        const path = card.querySelector(".verdict path");
+        path.style.animation = "none"; void path.offsetWidth; path.style.animation = "";
+      }
+    }
+
+    // ---------- Desar i exportar ----------
     function saveData() {
-      const sessionKey = `zenkai_${activeTab}`;
       const data = routineData[activeTab];
-      const sessionPayload = [];
-
-      data.exercises.forEach((ex, exIdx) => {
-        const weight = document.getElementById(`weight_${exIdx}`).value;
-        const rir = document.getElementById(`rir_${exIdx}`).value;
+      const previous = readStore(activeTab);
+      const payload = data.exercises.map((ex, i) => {
+        const weightEl = document.getElementById(`weight_${i}`);
+        const rirEl = document.querySelector(`input[name="rir_${i}"]:checked`);
         const reps = [];
-        for (let s = 1; s <= ex.series; s++) {
-          reps.push(document.getElementById(`reps_${exIdx}_${s}`).value);
-        }
-        sessionPayload.push({ weight, reps, rir });
+        for (let s = 1; s <= ex.series; s++) reps.push(document.getElementById(`reps_${i}_${s}`).value);
+        return {
+          weight: weightEl ? weightEl.value : (previous[i]?.weight ?? String(ex.defaultWeight)),
+          reps,
+          rir: rirEl ? rirEl.value : (previous[i]?.rir ?? "2")
+        };
       });
-
-      localStorage.setItem(sessionKey, JSON.stringify(sessionPayload));
-      alert('🔥 Sessió guardada correctament al navegador.');
-    }
-
-    function getSavedData(tabKey, exIdx) {
-      const raw = localStorage.getItem(`zenkai_${tabKey}`);
-      if (!raw) return {};
       try {
-        const parsed = JSON.parse(raw);
-        return parsed[exIdx] || {};
+        localStorage.setItem(`zenkai_${activeTab}`, JSON.stringify(payload));
+        showToast("Sessió desada en aquest navegador");
       } catch (e) {
-        return {};
+        showToast("No s'ha pogut desar: el navegador no deixa guardar dades en aquest mode");
       }
     }
 
     function exportToCSV() {
-      let csvContent = "data:text/csv;charset=utf-8,Sessio,Exercici,Pes_kg,Semies_Reps,RIR_Real\n";
+      let csv = "Sessio,Exercici,Pes_kg,Semies_Reps,RIR_Real\n";
       Object.keys(routineData).forEach(tabKey => {
         const sessionName = routineData[tabKey].title;
         routineData[tabKey].exercises.forEach((ex, exIdx) => {
@@ -329,19 +583,112 @@
           const weight = saved.weight || ex.defaultWeight;
           const rir = saved.rir || 2;
           const repsStr = saved.reps ? saved.reps.join("-") : "";
-          csvContent += `"${sessionName}","${ex.name}",${weight},"${repsStr}",${rir}\n`;
+          csv += `"${sessionName}","${ex.name}",${weight},"${repsStr}",${rir}\n`;
         });
       });
-
-      const encodedUri = encodeURI(csvContent);
+      const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", `Zenkai_Performance_Log_${new Date().toISOString().slice(0,10)}.csv`);
+      link.href = url;
+      link.download = `Entrenador_registre_${new Date().toISOString().slice(0, 10)}.csv`;
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showToast("CSV exportat");
     }
 
+    // ---------- Cronòmetre ----------
+    const dock = $("#dock"), clockEl = $("#timer"), bar = $("#timer-progress");
+    let timerEnd = 0, timerTotal = 0, ticker = null, audio = null;
+
+    function startTimer(seconds) {
+      timerTotal = seconds;
+      timerEnd = Date.now() + seconds * 1000;
+      dock.classList.remove("is-done");
+      dock.classList.add("is-running");
+      primeAudio();
+      clearInterval(ticker);
+      ticker = setInterval(tick, 200);
+      tick();
+    }
+    function stopTimer() {
+      clearInterval(ticker);
+      timerEnd = 0;
+      dock.classList.remove("is-running", "is-done");
+      clockEl.textContent = "00:00";
+      bar.style.transform = "scaleX(0)";
+    }
+    function tick() {
+      const msLeft = Math.max(0, timerEnd - Date.now());
+      const left = Math.ceil(msLeft / 1000);
+      clockEl.textContent = `${String(Math.floor(left / 60)).padStart(2, "0")}:${String(left % 60).padStart(2, "0")}`;
+      bar.style.transform = `scaleX(${1 - msLeft / (timerTotal * 1000)})`;
+      if (msLeft <= 0) {
+        clearInterval(ticker);
+        dock.classList.remove("is-running");
+        dock.classList.add("is-done");
+        bar.style.transform = "scaleX(0)";
+        beep();
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        showToast("Descans acabat. Torna a la barra.");
+      }
+    }
+    function primeAudio() {
+      try {
+        audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+        if (audio.state === "suspended") audio.resume();
+      } catch (e) { audio = null; }
+    }
+    function beep() {
+      if (!audio) return;
+      [0, 0.25].forEach(offset => {
+        const osc = audio.createOscillator(), gain = audio.createGain();
+        osc.frequency.value = 880;
+        gain.gain.setValueAtTime(0.0001, audio.currentTime + offset);
+        gain.gain.exponentialRampToValueAtTime(0.4, audio.currentTime + offset + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + offset + 0.18);
+        osc.connect(gain).connect(audio.destination);
+        osc.start(audio.currentTime + offset);
+        osc.stop(audio.currentTime + offset + 0.2);
+      });
+    }
+
+    // ---------- Avís ----------
+    let toastTimer = null;
+    function showToast(text) {
+      const t = $("#toast");
+      t.textContent = text;
+      t.classList.add("is-visible");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove("is-visible"), 2600);
+    }
+
+    // ---------- Esdeveniments ----------
+    $("#days").addEventListener("click", e => {
+      const btn = e.target.closest(".day");
+      if (!btn) return;
+      activeTab = btn.dataset.key;
+      document.querySelectorAll(".day").forEach(b => b.setAttribute("aria-pressed", b === btn));
+      renderWorkout();
+    });
+    $("#session").addEventListener("input", e => {
+      if (e.target.dataset.ex !== undefined) checkProgression(+e.target.dataset.ex);
+    });
+    $("#session").addEventListener("click", e => {
+      const rest = e.target.closest("[data-rest]");
+      if (rest) return startTimer(+rest.dataset.rest);
+      if (e.target.closest("#save-btn")) return saveData();
+      if (e.target.closest("#csv-btn")) return exportToCSV();
+    });
+    document.querySelector(".presets").addEventListener("click", e => {
+      const b = e.target.closest("button");
+      if (!b) return;
+      if (b.id === "timer-stop") stopTimer(); else startTimer(+b.dataset.rest);
+    });
+    document.addEventListener("visibilitychange", () => { if (!document.hidden && timerEnd) tick(); });
+
+    renderDays();
     renderWorkout();
   </script>
 </body>

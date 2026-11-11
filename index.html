@@ -256,6 +256,29 @@
     .alarm-mode input:checked + span strong { color: var(--chalk); }
     .alarm-mode input:focus-visible + span { outline: 3px solid var(--charcoal); outline-offset: 2px; }
 
+    .notify { margin-top: 30px; max-width: 560px; }
+    .notify-title { font-weight: 800; font-size: 1.3rem; line-height: 1.1; }
+    .notify-steps { margin: 10px 0 14px 1.25rem; font-size: 1rem; line-height: 1.4; }
+    .notify-steps li { padding-left: 2px; margin-bottom: 2px; }
+    .channel-label { display: block; font-weight: 600; font-size: .95rem; color: var(--graphite); margin-bottom: 4px; }
+    .channel-row { display: flex; gap: 8px; }
+    .channel-input {
+      flex: 1;
+      min-width: 0;
+      height: 50px;
+      padding: 0 12px;
+      background: rgba(236, 233, 226, .55);
+      border: 2px solid var(--charcoal);
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: var(--charcoal);
+    }
+    .channel-input:focus { outline: 3px solid var(--charcoal); outline-offset: 1px; }
+    .channel-hint { margin-top: 6px; font-size: .9rem; color: var(--graphite); }
+    .switch-row { display: flex; align-items: center; gap: 10px; margin: 16px 0 14px; font-weight: 600; font-size: 1.05rem; cursor: pointer; }
+    .switch-row input { width: 24px; height: 24px; accent-color: var(--charcoal); flex: none; }
+
     /* Cronòmetre: barra enganxada a dalt */
     .timerbar {
       position: -webkit-sticky;
@@ -369,6 +392,27 @@
       </label>
     </div>
     <button class="btn btn-dark" id="alarm-test">Prova l'avís</button>
+
+    <div class="notify">
+      <h3 class="notify-title">Notificació a l'iPhone</h3>
+      <p class="alarm-text">Si bloqueges el mòbil o canvies d'app, la pàgina s'atura i no pot sonar. Amb l'app gratuïta ntfy, l'avís t'arriba igualment com una notificació.</p>
+      <ol class="notify-steps">
+        <li>Instal·la <strong>ntfy</strong> de l'App Store.</li>
+        <li>A l'app, toca <strong>+</strong>, enganxa aquest canal i subscriu-t'hi amb el servidor ntfy.sh.</li>
+        <li>Activa l'opció de sota i envia una prova.</li>
+      </ol>
+      <label class="channel-label" for="ntfy-topic">Canal privat</label>
+      <div class="channel-row">
+        <input class="channel-input" id="ntfy-topic" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="64">
+        <button class="btn btn-dark" id="ntfy-copy">Copia</button>
+      </div>
+      <p class="channel-hint">Qui conegui aquest nom pot llegir els avisos. Si fas servir la pàgina des de dos llocs (Safari i la icona de la pantalla d'inici), posa-hi el mateix canal a tots dos.</p>
+      <label class="switch-row">
+        <input type="checkbox" id="ntfy-on">
+        <span>Envia'm una notificació quan acabi el descans</span>
+      </label>
+      <button class="btn btn-dark" id="ntfy-test">Envia una prova</button>
+    </div>
   </section>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -630,9 +674,10 @@
     const dock = $("#dock"), clockEl = $("#timer"), bar = $("#timer-progress");
     let timerEnd = 0, timerTotal = 0, ticker = null, alarmStarted = false;
 
-    function startTimer(seconds) {
+    function startTimer(seconds, label = "") {
       timerTotal = seconds;
       timerEnd = Date.now() + seconds * 1000;
+      scheduleNotice(seconds, label);
       alarmStarted = false;
       resetAlarm();
       unlockAlarm();
@@ -646,6 +691,7 @@
     function stopTimer() {
       clearInterval(ticker);
       timerEnd = 0;
+      cancelNotice();
       resetAlarm();
       letSleep();
       dock.classList.remove("is-running", "is-done");
@@ -666,6 +712,7 @@
       if (msLeft <= 0) {
         clearInterval(ticker);
         timerEnd = 0;
+        pendingSeq = null;
         dock.classList.remove("is-running");
         dock.classList.add("is-done");
         bar.style.transform = "scaleX(0)";
@@ -770,6 +817,48 @@
       if (wakeLock && !timerEnd) { wakeLock.release().catch(() => {}); wakeLock = null; }
     }
 
+    // ---------- Notificació amb ntfy ----------
+    // Safari a l'iPhone no deixa que la pàgina programi notificacions pròpies:
+    // en començar el descans, es demana a ntfy.sh que l'enviï a l'hora d'acabar.
+    const NTFY = "https://ntfy.sh";
+    let pendingSeq = null;
+
+    function store(key, value) {
+      try { if (value === undefined) return localStorage.getItem(key); localStorage.setItem(key, value); } catch (e) { return null; }
+    }
+    function ntfyTopic() {
+      let t = store("entrenador_ntfy_topic");
+      if (!t) {
+        const bytes = new Uint8Array(14);
+        crypto.getRandomValues(bytes);
+        t = "entrenador-" + Array.from(bytes, b => "abcdefghijkmnpqrstuvwxyz23456789"[b % 32]).join("");
+        store("entrenador_ntfy_topic", t);
+      }
+      return t;
+    }
+    const ntfyOn = () => store("entrenador_ntfy") === "1";
+
+    function ntfyPost(path, params, body) {
+      const qs = new URLSearchParams(params).toString();
+      return fetch(`${NTFY}/${path}?${qs}`, { method: "POST", body, mode: "no-cors", keepalive: true });
+    }
+    function scheduleNotice(seconds, label) {
+      cancelNotice();
+      if (!ntfyOn() || seconds < 20) return;
+      const topic = ntfyTopic();
+      pendingSeq = "descans-" + Date.now().toString(36);
+      // ntfy reparteix els missatges programats cada pocs segons: es demana 5 s abans per quadrar-ho
+      const at = Math.round(timerEnd / 1000) - 5;
+      ntfyPost(`${encodeURIComponent(topic)}/${pendingSeq}`,
+        { at, title: "Descans acabat", priority: "5", tags: "stopwatch" },
+        label ? `Següent sèrie: ${label}` : "Torna a la barra.").catch(() => {});
+    }
+    function cancelNotice() {
+      if (!pendingSeq) return;
+      fetch(`${NTFY}/${encodeURIComponent(ntfyTopic())}/${pendingSeq}/delete`, { mode: "no-cors", keepalive: true }).catch(() => {});
+      pendingSeq = null;
+    }
+
     // ---------- Avís ----------
     let toastTimer = null;
     function showToast(text) {
@@ -793,7 +882,10 @@
     });
     $("#session").addEventListener("click", e => {
       const rest = e.target.closest("[data-rest]");
-      if (rest) return startTimer(+rest.dataset.rest);
+      if (rest) {
+        const name = rest.closest(".ex")?.querySelector(".ex-name")?.textContent || "";
+        return startTimer(+rest.dataset.rest, name);
+      }
       if (e.target.closest("#save-btn")) return saveData();
       if (e.target.closest("#csv-btn")) return exportToCSV();
     });
@@ -817,6 +909,31 @@
       setTimeout(buzz, PIPS_LEAD * 1000);
     });
     applySoundMode(readSoundMode());
+
+    const topicInput = $("#ntfy-topic"), ntfyToggle = $("#ntfy-on");
+    topicInput.value = ntfyTopic();
+    ntfyToggle.checked = ntfyOn();
+    topicInput.addEventListener("change", () => {
+      const clean = topicInput.value.trim().replace(/[^A-Za-z0-9_-]/g, "").slice(0, 64);
+      if (clean.length < 8) { topicInput.value = ntfyTopic(); return showToast("El canal ha de tenir almenys 8 lletres o xifres"); }
+      topicInput.value = clean;
+      store("entrenador_ntfy_topic", clean);
+      showToast("Canal desat");
+    });
+    ntfyToggle.addEventListener("change", () => {
+      store("entrenador_ntfy", ntfyToggle.checked ? "1" : "0");
+      showToast(ntfyToggle.checked ? "Notificacions activades" : "Notificacions desactivades");
+    });
+    $("#ntfy-copy").addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText(topicInput.value); showToast("Canal copiat"); }
+      catch (e) { topicInput.select(); showToast("Selecciona el text i copia'l a mà"); }
+    });
+    $("#ntfy-test").addEventListener("click", () => {
+      ntfyPost(encodeURIComponent(ntfyTopic()), { title: "Prova d'Entrenador", priority: "5", tags: "stopwatch" },
+        "Si veus això, els avisos de descans t'arribaran.")
+        .then(() => showToast("Prova enviada. Hauria d'arribar en uns segons."))
+        .catch(() => showToast("No s'ha pogut enviar. Comprova la connexió."));
+    });
 
     renderDays();
     renderWorkout();

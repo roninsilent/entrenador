@@ -228,6 +228,34 @@
     .btn-dark { background: var(--charcoal); color: var(--chalk); }
     .storage-note { max-width: 46ch; margin-top: 12px; font-size: .95rem; color: var(--graphite); }
 
+    .alarm { max-width: var(--wrap); margin: 40px auto 0; padding: 22px 16px 0; border-top: 2px solid rgba(29, 28, 26, .35); }
+    .alarm-title { font-weight: 800; font-size: 1.6rem; line-height: 1; }
+    .alarm-text { max-width: 52ch; margin-top: 6px; font-size: 1rem; color: var(--graphite); }
+    .alarm-modes { display: grid; gap: 8px; max-width: 560px; margin: 14px 0 16px; }
+    .alarm-mode { position: relative; display: block; cursor: pointer; }
+    .alarm-mode input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+    .alarm-mode span {
+      display: block;
+      padding: 10px 12px 10px 40px;
+      border: 2px solid var(--charcoal);
+      border-radius: 6px;
+      font-size: 1rem;
+      line-height: 1.3;
+      color: var(--graphite);
+      background:
+        radial-gradient(circle at 19px 50%, transparent 6px, var(--charcoal) 6.5px, var(--charcoal) 8.5px, transparent 9px);
+    }
+    .alarm-mode strong { display: block; font-weight: 800; font-size: 1.1rem; color: var(--charcoal); }
+    .alarm-mode input:checked + span {
+      background:
+        radial-gradient(circle at 19px 50%, var(--chalk) 4px, transparent 4.5px),
+        radial-gradient(circle at 19px 50%, transparent 6px, var(--chalk) 6.5px, var(--chalk) 8.5px, transparent 9px),
+        var(--charcoal);
+      color: var(--chalk-dim);
+    }
+    .alarm-mode input:checked + span strong { color: var(--chalk); }
+    .alarm-mode input:focus-visible + span { outline: 3px solid var(--charcoal); outline-offset: 2px; }
+
     /* Cronòmetre: barra enganxada a dalt */
     .timerbar {
       position: -webkit-sticky;
@@ -326,6 +354,22 @@
   <nav class="days" id="days" aria-label="Sessions de la setmana"></nav>
 
   <main class="session" id="session"></main>
+
+  <section class="alarm" aria-labelledby="alarm-title">
+    <h2 class="alarm-title" id="alarm-title">Avís en acabar el descans</h2>
+    <p class="alarm-text">Tres xiulets curts als últims tres segons i un senyal llarg al final. Mentre compta, la pantalla es manté encesa.</p>
+    <div class="alarm-modes" role="radiogroup" aria-label="Volum de l'avís">
+      <label class="alarm-mode">
+        <input type="radio" name="sound-mode" value="fort">
+        <span><strong>Sempre</strong> Sona encara que el mòbil estigui en silenci. A l'iPhone atura la música que tinguis posada.</span>
+      </label>
+      <label class="alarm-mode">
+        <input type="radio" name="sound-mode" value="discret">
+        <span><strong>Respecta el silenci</strong> Sona per sobre de la música, però calla si el mòbil està en silenci.</span>
+      </label>
+    </div>
+    <button class="btn btn-dark" id="alarm-test">Prova l'avís</button>
+  </section>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -584,14 +628,17 @@
 
     // ---------- Cronòmetre ----------
     const dock = $("#dock"), clockEl = $("#timer"), bar = $("#timer-progress");
-    let timerEnd = 0, timerTotal = 0, ticker = null, audio = null;
+    let timerEnd = 0, timerTotal = 0, ticker = null, alarmStarted = false;
 
     function startTimer(seconds) {
       timerTotal = seconds;
       timerEnd = Date.now() + seconds * 1000;
+      alarmStarted = false;
+      resetAlarm();
+      unlockAlarm();
+      keepAwake();
       dock.classList.remove("is-done");
       dock.classList.add("is-running");
-      primeAudio();
       clearInterval(ticker);
       ticker = setInterval(tick, 200);
       tick();
@@ -599,6 +646,8 @@
     function stopTimer() {
       clearInterval(ticker);
       timerEnd = 0;
+      resetAlarm();
+      letSleep();
       dock.classList.remove("is-running", "is-done");
       clockEl.textContent = "00:00";
       bar.style.transform = "scaleX(0)";
@@ -608,34 +657,117 @@
       const left = Math.ceil(msLeft / 1000);
       clockEl.textContent = `${String(Math.floor(left / 60)).padStart(2, "0")}:${String(left % 60).padStart(2, "0")}`;
       bar.style.transform = `scaleX(${1 - msLeft / (timerTotal * 1000)})`;
+
+      // L'àudio porta tres xiulets curts (3, 2, 1) i el senyal final: arrenca 3 s abans d'acabar
+      if (!alarmStarted && msLeft <= PIPS_LEAD * 1000) {
+        alarmStarted = true;
+        playAlarm(PIPS_LEAD - msLeft / 1000);
+      }
       if (msLeft <= 0) {
         clearInterval(ticker);
+        timerEnd = 0;
         dock.classList.remove("is-running");
         dock.classList.add("is-done");
         bar.style.transform = "scaleX(0)";
-        beep();
-        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        buzz();
         showToast("Descans acabat. Torna a la barra.");
+        setTimeout(letSleep, 4000);
       }
     }
-    function primeAudio() {
-      try {
-        audio = audio || new (window.AudioContext || window.webkitAudioContext)();
-        if (audio.state === "suspended") audio.resume();
-      } catch (e) { audio = null; }
+
+    // ---------- So ----------
+    // Un fitxer WAV generat aquí mateix: no depèn de cap descàrrega i funciona sense connexió.
+    const PIPS_LEAD = 3;
+    const alarm = new Audio(makeAlarmUrl());
+    alarm.preload = "auto";
+    let alarmUnlocked = false;
+
+    function makeAlarmUrl() {
+      const rate = 22050, length = Math.floor(rate * 4.7);
+      const pcm = new Float32Array(length);
+      const tone = (start, dur, freq, amp) => {
+        const a = Math.floor(start * rate), b = Math.min(length, a + Math.floor(dur * rate));
+        for (let i = a; i < b; i++) {
+          const t = (i - a) / rate;
+          const env = Math.min(1, t / 0.004) * Math.min(1, (dur - t) / 0.02);
+          const w = 2 * Math.PI * freq * t;
+          pcm[i] += amp * env * (Math.sin(w) + 0.4 * Math.sin(2 * w) + 0.25 * Math.sin(3 * w)) / 1.65;
+        }
+      };
+      [0, 1, 2].forEach(t => tone(t, 0.12, 988, 0.6));            // 3, 2, 1
+      [3, 3.3, 3.6].forEach(t => tone(t, 0.22, 1319, 1));         // fi del descans
+      tone(3.95, 0.6, 1319, 1);
+      const buf = new ArrayBuffer(44 + length * 2), v = new DataView(buf);
+      const str = (o, x) => [...x].forEach((c, k) => v.setUint8(o + k, c.charCodeAt(0)));
+      str(0, "RIFF"); v.setUint32(4, 36 + length * 2, true); str(8, "WAVE"); str(12, "fmt ");
+      v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+      v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+      str(36, "data"); v.setUint32(40, length * 2, true);
+      for (let i = 0; i < length; i++) v.setInt16(44 + i * 2, Math.max(-1, Math.min(1, pcm[i])) * 32767, true);
+      return URL.createObjectURL(new Blob([buf], { type: "audio/wav" }));
     }
-    function beep() {
-      if (!audio) return;
-      [0, 0.25].forEach(offset => {
-        const osc = audio.createOscillator(), gain = audio.createGain();
-        osc.frequency.value = 880;
-        gain.gain.setValueAtTime(0.0001, audio.currentTime + offset);
-        gain.gain.exponentialRampToValueAtTime(0.4, audio.currentTime + offset + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + offset + 0.18);
-        osc.connect(gain).connect(audio.destination);
-        osc.start(audio.currentTime + offset);
-        osc.stop(audio.currentTime + offset + 0.2);
-      });
+    // iOS només deixa sonar un àudio sense tocar la pantalla si abans l'has engegat amb un toc
+    function unlockAlarm() {
+      if (alarmUnlocked) return;
+      alarm.muted = true;
+      const p = alarm.play();
+      const done = () => { alarm.pause(); alarm.currentTime = 0; alarm.muted = false; };
+      if (p && p.then) p.then(() => { alarmUnlocked = true; done(); }).catch(done); else done();
+    }
+    function playAlarm(fromSecond) {
+      try {
+        alarm.muted = false;
+        alarm.currentTime = Math.max(0, fromSecond);
+        const p = alarm.play();
+        if (p && p.catch) p.catch(() => {});
+      } catch (e) {}
+    }
+    function resetAlarm() {
+      try { alarm.pause(); alarm.currentTime = 0; } catch (e) {}
+    }
+
+    // Mode del so: "fort" sona encara que el mòbil estigui en silenci; "discret" el respecta
+    function readSoundMode() {
+      try { return localStorage.getItem("entrenador_so") || "fort"; } catch (e) { return "fort"; }
+    }
+    function applySoundMode(mode) {
+      if (navigator.audioSession) {
+        try { navigator.audioSession.type = mode === "fort" ? "playback" : "ambient"; } catch (e) {}
+      }
+      document.querySelectorAll('input[name="sound-mode"]').forEach(r => { r.checked = r.value === mode; });
+    }
+
+    // ---------- Vibració ----------
+    // Android: Vibration API. iPhone: Safari no la té; s'intenta el toc hàptic de l'interruptor.
+    const hapticSwitch = (() => {
+      const label = document.createElement("label");
+      label.setAttribute("aria-hidden", "true");
+      label.style.cssText = "position:fixed;left:-9999px;top:0;opacity:0;pointer-events:none";
+      label.innerHTML = '<input type="checkbox" switch tabindex="-1">';
+      document.body.appendChild(label);
+      return label;
+    })();
+    function buzz() {
+      if (navigator.vibrate) {
+        navigator.vibrate([500, 150, 500, 150, 900]);
+      } else {
+        for (let k = 0; k < 8; k++) setTimeout(() => hapticSwitch.click(), k * 140);
+      }
+    }
+
+    // ---------- Pantalla encesa durant el descans ----------
+    // Si el mòbil es bloqueja, el navegador s'atura i no pot ni sonar ni vibrar.
+    let wakeLock = null;
+    async function keepAwake() {
+      try {
+        if ("wakeLock" in navigator && !wakeLock) {
+          wakeLock = await navigator.wakeLock.request("screen");
+          wakeLock.addEventListener("release", () => { wakeLock = null; });
+        }
+      } catch (e) { wakeLock = null; }
+    }
+    function letSleep() {
+      if (wakeLock && !timerEnd) { wakeLock.release().catch(() => {}); wakeLock = null; }
     }
 
     // ---------- Avís ----------
@@ -670,7 +802,21 @@
       if (!b) return;
       if (b.id === "timer-stop") stopTimer(); else startTimer(+b.dataset.rest);
     });
-    document.addEventListener("visibilitychange", () => { if (!document.hidden && timerEnd) tick(); });
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden && timerEnd) { keepAwake(); tick(); }
+    });
+    document.querySelector(".alarm-modes").addEventListener("change", e => {
+      if (e.target.name !== "sound-mode") return;
+      try { localStorage.setItem("entrenador_so", e.target.value); } catch (err) {}
+      applySoundMode(e.target.value);
+    });
+    $("#alarm-test").addEventListener("click", () => {
+      unlockAlarm();
+      resetAlarm();
+      playAlarm(0);
+      setTimeout(buzz, PIPS_LEAD * 1000);
+    });
+    applySoundMode(readSoundMode());
 
     renderDays();
     renderWorkout();

@@ -338,31 +338,154 @@
     }
     .toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
 
+    [hidden] { display: none !important; }
+
+    /* ---------- Vistes: Entrena / Progrés ---------- */
+    .views { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; max-width: 560px; margin: 16px auto 0; padding: 0 16px; }
+    .view-btn { height: 44px; border: 2px solid var(--charcoal); border-radius: 6px; background: transparent; font-weight: 800; font-size: 1.1rem; }
+    .view-btn[aria-pressed="true"] { background: var(--charcoal); color: var(--chalk); }
+
+    .progress { display: grid; gap: 30px; max-width: var(--wrap); margin: 22px auto 0; padding: 0 16px; }
+    .sec-title { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; font-weight: 800; font-size: 1.75rem; line-height: 1; }
+    .sec-title small { font-weight: 600; font-size: 1rem; color: var(--graphite); }
+    .panel { background: var(--iron); color: var(--chalk); border-radius: 6px; box-shadow: 0 3px 0 var(--charcoal); }
+
+    /* Ratxa */
+    .streak-row { display: grid; grid-template-columns: 1.25fr 1fr 1fr; gap: 8px; }
+    .stat { display: grid; align-content: start; gap: 4px; padding: 12px; }
+    .stat b { font-weight: 800; font-size: clamp(2.1rem, 9vw, 2.8rem); line-height: .9; font-variant-numeric: tabular-nums; }
+    .stat span { font-weight: 600; font-size: .95rem; line-height: 1.15; color: var(--chalk-dim); }
+    .stat-main { grid-template-columns: auto 1fr; column-gap: 8px; align-items: end; }
+    .stat-main svg { width: 30px; height: 36px; color: var(--orange); grid-row: 1; }
+    .stat-main b { color: var(--orange); }
+    .stat-main span { grid-column: 1 / -1; }
+    .stat-main.is-off svg, .stat-main.is-off b { color: var(--chalk-dim); }
+
+    /* Calendari */
+    .cal { padding: 12px; }
+    .cal-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+    .cal-title { font-weight: 800; font-size: 1.5rem; line-height: 1; }
+    .cal-nav { display: grid; place-items: center; width: 44px; height: 44px; background: transparent; border: 2px solid var(--iron-edge); border-radius: 4px; }
+    .cal-nav svg { width: 18px; height: 18px; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+    .cal-wd { padding: 2px 0 4px; text-align: center; font-weight: 600; font-size: .85rem; color: var(--chalk-dim); }
+    .cal-day {
+      position: relative;
+      display: grid;
+      grid-template-rows: 1fr 6px;
+      justify-items: center;
+      align-items: center;
+      min-height: 46px;
+      padding: 6px 0 5px;
+      background: var(--iron-well);
+      border: 2px solid transparent;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 1.05rem;
+      font-variant-numeric: tabular-nums;
+      color: #77736c;
+    }
+    .cal-day.has { color: var(--chalk); background: #34322e; }
+    .cal-day.is-today { border-color: var(--chalk-dim); }
+    .cal-day[aria-pressed="true"] { border-color: var(--orange); }
+    .cal-marks { display: flex; gap: 3px; }
+    .cal-marks i { width: 12px; height: 4px; border-radius: 2px; background: var(--orange); }
+    .cal-marks i.is-rec { background: var(--chalk-dim); }
+    .cal-day.has-trophy::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      width: 9px;
+      height: 9px;
+      background: var(--orange);
+      clip-path: polygon(50% 0, 63% 35%, 100% 38%, 71% 61%, 81% 100%, 50% 78%, 19% 100%, 29% 61%, 0 38%, 37% 35%);
+    }
+    .cal-blank { visibility: hidden; }
+    .cal-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 10px; font-size: .9rem; color: var(--chalk-dim); }
+    .cal-legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .cal-legend i { display: inline-block; width: 12px; height: 4px; border-radius: 2px; background: var(--orange); }
+    .cal-legend i.is-rec { background: var(--chalk-dim); }
+    .cal-legend i.star { width: 10px; height: 10px; border-radius: 0; clip-path: polygon(50% 0, 63% 35%, 100% 38%, 71% 61%, 81% 100%, 50% 78%, 19% 100%, 29% 61%, 0 38%, 37% 35%); }
+
+    /* Detall del dia */
+    .day-detail { margin-top: 14px; padding-top: 14px; border-top: 2px solid var(--iron-edge); }
+    .dd-title { font-weight: 800; font-size: 1.35rem; line-height: 1.1; }
+    .dd-note { margin-top: 6px; color: var(--chalk-dim); }
+    .dd-session { margin-top: 14px; }
+    .dd-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .dd-name { font-weight: 800; font-size: 1.15rem; }
+    .dd-del { height: 36px; padding: 0 12px; background: transparent; border: 2px solid var(--iron-edge); border-radius: 4px; font-weight: 600; font-size: .95rem; color: var(--chalk-dim); }
+    .dd-del.is-armed { border-color: var(--orange); color: var(--orange); }
+    .dd-list { list-style: none; margin-top: 6px; }
+    .dd-ex { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 8px 0; border-bottom: 1px solid var(--iron-edge); }
+    .dd-ex:last-child { border-bottom: 0; }
+    .dd-ex-name { font-weight: 600; line-height: 1.2; }
+    .dd-ex-w { font-weight: 800; text-align: right; font-variant-numeric: tabular-nums; }
+    .dd-ex-sub { grid-column: 1 / -1; font-size: .95rem; color: var(--chalk-dim); font-variant-numeric: tabular-nums; }
+    .dd-up { font-family: var(--hand); color: var(--orange); }
+    .dd-trophies { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+    .dd-trophies span { padding: 4px 10px; border: 2px solid var(--orange); border-radius: 999px; font-weight: 600; font-size: .95rem; color: var(--orange); }
+    .dd-plan { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; }
+    .dd-plan p { color: var(--chalk-dim); }
+    .dd-plan b { color: var(--chalk); }
+    .dd-open { height: 44px; padding: 0 16px; background: var(--orange); color: var(--charcoal); border: 0; border-radius: 4px; font-weight: 800; font-size: 1.05rem; }
+
+    /* Trofeus */
+    .trophies { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 158px), 1fr)); gap: 10px; }
+    .trophy { display: grid; align-content: start; gap: 6px; padding: 12px; border-top: 4px solid var(--iron-edge); }
+    .trophy svg { width: 34px; height: 34px; color: #5c5955; }
+    .trophy h3 { font-weight: 800; font-size: 1.1rem; line-height: 1.1; color: var(--chalk-dim); }
+    .trophy p { font-size: .92rem; line-height: 1.25; color: var(--chalk-dim); }
+    .trophy .bar { height: 6px; margin-top: 2px; background: var(--iron-well); border-radius: 3px; overflow: hidden; }
+    .trophy .bar i { display: block; height: 100%; width: var(--p); background: var(--chalk-dim); }
+    .trophy .count { font-weight: 600; font-size: .9rem; color: var(--chalk-dim); font-variant-numeric: tabular-nums; }
+    .trophy.got { border-top-color: var(--orange); }
+    .trophy.got svg { color: var(--orange); }
+    .trophy.got h3 { color: var(--chalk); }
+    .trophy .when { font-family: var(--hand); font-size: .95rem; color: var(--orange); }
+
+    /* Rècords */
+    .records { padding: 2px 12px; }
+    .rec { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 10px 0; border-bottom: 1px solid var(--iron-edge); }
+    .rec:last-child { border-bottom: 0; }
+    .rec-name { font-weight: 600; line-height: 1.2; }
+    .rec-w { font-weight: 800; font-size: 1.2rem; text-align: right; font-variant-numeric: tabular-nums; }
+    .rec-sub { grid-column: 1 / -1; font-size: .92rem; color: var(--chalk-dim); }
+    .rec-sub b { color: var(--orange); font-weight: 600; }
+    .empty-note { padding: 12px 0; color: var(--chalk-dim); }
+    @media (min-width: 900px) {
+      .cal { display: grid; grid-template-columns: minmax(0, 440px) 1fr; column-gap: 28px; align-items: start; }
+      .cal-head, .cal-grid, .cal-legend { grid-column: 1; }
+      .day-detail { grid-column: 2; grid-row: 1 / span 3; margin-top: 0; padding: 4px 0 0 28px; border-top: 0; border-left: 2px solid var(--iron-edge); min-height: 100%; }
+    }
+
     /* ---------- Efectes del mediakit de Zenkai3D ---------- */
     /* Entrada: la capçalera puja en obrir la pàgina; les targetes entren desenfocades i escalonades
        quan arriben a la pantalla; en passar-hi el ratolí s'aixequen amb vora i halo taronja. */
     :root { --glow: rgba(232, 102, 26, .4); --ease-out: cubic-bezier(.2, .7, .2, 1); }
     .verdict { transition: transform .25s var(--ease-out); transform-origin: right center; }
     @media (prefers-reduced-motion: no-preference) {
-      .masthead > *, .timerbar, .days, .session-head { animation: puja .55s var(--ease-out) both; }
+      .masthead > *, .timerbar, .views, .days, .session-head, .progress > section { animation: puja .55s var(--ease-out) both; }
       .masthead > :nth-child(2) { animation-delay: .05s; }
       .timerbar { animation-delay: .1s; }
       .days { animation-delay: .15s; }
       .session-head { animation-delay: .05s; }
       @keyframes puja { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
-      .ex { transition: transform .25s var(--ease-out), box-shadow .25s; }
-      .ex:not(.in) { opacity: 0; }
-      .ex.in { animation: revela .75s var(--ease-out) backwards; animation-delay: calc(var(--i, 0) * 110ms); }
+      .ex, .trophy { transition: transform .25s var(--ease-out), box-shadow .25s; }
+      .ex:not(.in), .trophy:not(.in) { opacity: 0; }
+      .ex.in, .trophy.in { animation: revela .75s var(--ease-out) backwards; animation-delay: calc(var(--i, 0) * 110ms); }
       @keyframes revela { from { opacity: 0; filter: blur(12px); transform: translateY(18px) scale(.95); } to { opacity: 1; filter: blur(0); transform: none; } }
 
-      .day, .preset, .rest-btn, .rir span.opt, .alarm-mode span { transition: transform .15s, border-color .2s, background-color .2s; }
-      .day:active, .preset:active, .rest-btn:active { transform: scale(.96); }
+      .day, .preset, .rest-btn, .rir span.opt, .alarm-mode span, .view-btn, .cal-day, .cal-nav { transition: transform .15s, border-color .2s, background-color .2s; }
+      .day:active, .preset:active, .rest-btn:active, .view-btn:active, .cal-day:active, .cal-nav:active { transform: scale(.96); }
       .rir label:active span.opt, .alarm-mode:active span { transform: scale(.96); }
     }
     @media (hover: hover) and (prefers-reduced-motion: no-preference) {
       .ex.in:hover { transform: translateY(-4px); box-shadow: 0 18px 36px -18px var(--glow), 0 0 0 2px var(--orange), 0 3px 0 var(--charcoal); }
       .ex.in:hover .verdict { transform: scale(1.08); }
+      .trophy.got.in:hover { transform: translateY(-4px); box-shadow: 0 18px 36px -18px var(--glow), 0 0 0 2px var(--orange), 0 3px 0 var(--charcoal); }
       .day:not([aria-pressed="true"]):hover { transform: translateY(-1px); }
       .btn-primary:hover { filter: brightness(1.07); }
     }
@@ -403,6 +526,12 @@
     <div class="timer-progress" id="timer-progress"></div>
   </section>
 
+  <nav class="views" aria-label="Vista">
+    <button class="view-btn" data-view="train" aria-pressed="true">Entrena</button>
+    <button class="view-btn" data-view="progress" aria-pressed="false">Progrés</button>
+  </nav>
+
+  <div id="view-train">
   <nav class="days" id="days" aria-label="Sessions de la setmana"></nav>
 
   <main class="session" id="session"></main>
@@ -443,6 +572,33 @@
       <button class="btn btn-dark" id="ntfy-test">Envia una prova</button>
     </div>
   </section>
+  </div>
+
+  <div class="progress" id="view-progress" hidden>
+    <section aria-label="Ratxa">
+      <div class="streak-row" id="streaks"></div>
+    </section>
+    <section aria-labelledby="cal-title">
+      <div class="panel cal">
+        <div class="cal-head">
+          <button class="cal-nav" id="cal-prev" aria-label="Mes anterior"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M11.5 3 5.5 9l6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <h2 class="cal-title" id="cal-title"></h2>
+          <button class="cal-nav" id="cal-next" aria-label="Mes següent"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="m6.5 3 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+        <p class="cal-legend"><span><i></i>Força</span><span><i class="is-rec"></i>Recuperació</span><span><i class="star"></i>Trofeu</span></p>
+        <div class="day-detail" id="day-detail" aria-live="polite"></div>
+      </div>
+    </section>
+    <section aria-labelledby="trophies-title">
+      <h2 class="sec-title" id="trophies-title">Trofeus <small id="trophy-count"></small></h2>
+      <div class="trophies" id="trophies"></div>
+    </section>
+    <section aria-labelledby="records-title">
+      <h2 class="sec-title" id="records-title">Rècords per exercici</h2>
+      <div class="panel records" id="records"></div>
+    </section>
+  </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -510,7 +666,8 @@
       { key: "torsoB",      abbr: "Dj", short: "Torso B", day: "Dijous",                     name: "Torso B" },
       { key: "camaB",       abbr: "Dv", short: "Cama B",  day: "Divendres",                  name: "Cama B" }
     ];
-    const todayKey = ["recuperacio", "torsoA", "camaA", "recuperacio", "torsoB", "camaB", "recuperacio"][new Date().getDay()];
+    const PLAN_BY_WEEKDAY = ["recuperacio", "torsoA", "camaA", "recuperacio", "torsoB", "camaB", "recuperacio"];
+    const todayKey = PLAN_BY_WEEKDAY[new Date().getDay()];
     let activeTab = todayKey;
 
     const $ = (sel) => document.querySelector(sel);
@@ -621,24 +778,26 @@
     }
 
     // Les targetes entren quan es veuen; les que entren juntes van escalonades (com al mediakit)
-    let revealObserver = null;
-    function revealCards() {
-      const cards = Array.from(document.querySelectorAll(".ex"));
-      const showAll = () => cards.forEach(c => c.classList.add("in"));
-      if (revealObserver) revealObserver.disconnect();
+    const revealObservers = {};
+    function revealEls(selector) {
+      const els = Array.from(document.querySelectorAll(selector));
+      const showAll = () => els.forEach(c => c.classList.add("in"));
+      if (revealObservers[selector]) revealObservers[selector].disconnect();
       if (!("IntersectionObserver" in window)) return showAll();
-      revealObserver = new IntersectionObserver(entries => {
+      const io = new IntersectionObserver(entries => {
         let k = 0;
         entries.forEach(e => {
           if (!e.isIntersecting) return;
           e.target.style.setProperty("--i", k++);
           e.target.classList.add("in");
-          revealObserver.unobserve(e.target);
+          io.unobserve(e.target);
         });
       }, { threshold: .15 });
-      cards.forEach(c => revealObserver.observe(c));
+      revealObservers[selector] = io;
+      els.forEach(c => io.observe(c));
       setTimeout(showAll, 5000);
     }
+    const revealCards = () => revealEls(".ex");
 
     // ---------- Doble progressió ----------
     function checkProgression(exIdx, animate = true) {
@@ -690,10 +849,35 @@
       });
       try {
         localStorage.setItem(`zenkai_${activeTab}`, JSON.stringify(payload));
-        showToast("Sessió desada en aquest navegador");
       } catch (e) {
-        showToast("No s'ha pogut desar: el navegador no deixa guardar dades en aquest mode");
+        return showToast("No s'ha pogut desar: el navegador no deixa guardar dades en aquest mode");
       }
+
+      // Al calendari només compta si hi ha alguna sèrie apuntada
+      const logged = payload.some(p => p.reps.some(r => parseFloat(r) > 0));
+      if (!logged) return showToast("Desada. Per comptar al calendari, apunta almenys una sèrie.");
+
+      const history = loadHistory();
+      const before = computeProgress(history).earned;
+      const today = dateKey(new Date());
+      history[today] = history[today] || {};
+      history[today][activeTab] = {
+        t: Date.now(),
+        ex: data.exercises.map((ex, i) => ({
+          n: ex.name,
+          w: parseFloat(payload[i].weight) || 0,
+          r: payload[i].reps.map(v => (v === "" || isNaN(parseFloat(v))) ? null : parseFloat(v)),
+          rir: parseInt(payload[i].rir, 10),
+          max: ex.maxReps
+        }))
+      };
+      if (!saveHistory(history)) return showToast("Desada, però no s'ha pogut afegir al calendari");
+
+      const after = computeProgress(history).earned;
+      const fresh = TROPHIES.filter(t => after[t.id] && !before[t.id]);
+      if (fresh.length === 1) showToast(`Trofeu nou: ${fresh[0].title}`, 4500);
+      else if (fresh.length > 1) showToast(`${fresh.length} trofeus nous: ${fresh.map(t => t.title).join(", ")}`, 5500);
+      else showToast("Sessió desada al calendari");
     }
 
     function exportToCSV() {
@@ -909,14 +1093,262 @@
       pendingSeq = null;
     }
 
+    // ---------- Historial ----------
+    // { "2026-11-11": { torsoA: { t, ex: [{ n, w, r: [reps…], rir, max }] } } }
+    const HISTORY_KEY = "entrenador_historial";
+    const STRENGTH = ["torsoA", "camaA", "torsoB", "camaB"];
+    function loadHistory() {
+      try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || {}; } catch (e) { return {}; }
+    }
+    function saveHistory(h) {
+      try { localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); return true; } catch (e) { return false; }
+    }
+    const pad2 = n => String(n).padStart(2, "0");
+    const dateKey = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+    const parseKey = k => { const [y, m, d] = k.split("-").map(Number); return new Date(y, m - 1, d); };
+    const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+    const weekKey = d => dateKey(addDays(d, -((d.getDay() + 6) % 7)));
+    const esc = v => String(v).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+    const MONTHS = ["gener", "febrer", "març", "abril", "maig", "juny", "juliol", "agost", "setembre", "octubre", "novembre", "desembre"];
+    const WEEKDAYS = ["diumenge", "dilluns", "dimarts", "dimecres", "dijous", "divendres", "dissabte"];
+    const ofMonth = m => /^[aeiou]/.test(MONTHS[m]) ? `d'${MONTHS[m]}` : `de ${MONTHS[m]}`;
+    const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
+    const shortDate = key => { const d = parseKey(key); return `${d.getDate()} ${ofMonth(d.getMonth())}`; };
+    const longDate = key => { const d = parseKey(key); return cap(`${WEEKDAYS[d.getDay()]} ${d.getDate()} ${ofMonth(d.getMonth())}`); };
+    const num = new Intl.NumberFormat("ca-ES", { maximumFractionDigits: 1 });
+    const kg = w => `${num.format(w)} kg`;
+
+    // ---------- Trofeus ----------
+    const ICONS = {
+      kb: '<path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/><circle cx="12" cy="15.5" r="5.5"/>',
+      flame: '<path d="M12 3c.8 3.4 5 5.3 5 10.2a5 5 0 0 1-10 0c0-2.3 1.1-3.8 2.4-4.8.2 1.6.9 2.7 2.1 3.1-.2-3.1-.3-5.6.5-8.5Z"/>',
+      up: '<path d="M3 19.5 9.5 13l4 4L21 8.5"/><path d="M15 8.5h6v6"/>',
+      bars: '<path d="M4 20.5h16"/><path d="M7 20.5v-6"/><path d="M12 20.5v-11"/><path d="M17 20.5V4"/>',
+      cal: '<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="m9 15 2 2 4-4"/>',
+      plate: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3"/>',
+      db: '<path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/>'
+    };
+    const TROPHIES = [
+      { id: "s1",   metric: "sessions", goal: 1,     icon: "kb",    title: "Primera sessió",          desc: "Desa el primer entrenament." },
+      { id: "s10",  metric: "sessions", goal: 10,    icon: "kb",    title: "10 sessions",             desc: "Deu entrenaments al calendari." },
+      { id: "s25",  metric: "sessions", goal: 25,    icon: "kb",    title: "25 sessions",             desc: "Vint-i-cinc entrenaments." },
+      { id: "s50",  metric: "sessions", goal: 50,    icon: "kb",    title: "50 sessions",             desc: "Cinquanta entrenaments." },
+      { id: "s100", metric: "sessions", goal: 100,   icon: "kb",    title: "Centenari",               desc: "Cent entrenaments." },
+      { id: "r3",   metric: "best",     goal: 3,     icon: "flame", title: "Ratxa de 3",              desc: "Tres dies seguits entrenant." },
+      { id: "r7",   metric: "best",     goal: 7,     icon: "flame", title: "Setmana sense parar",     desc: "Set dies seguits. La recuperació també compta." },
+      { id: "r14",  metric: "best",     goal: 14,    icon: "flame", title: "Dues setmanes seguides",  desc: "Catorze dies seguits." },
+      { id: "r30",  metric: "best",     goal: 30,    icon: "flame", title: "Un mes sense fallar",     desc: "Trenta dies seguits." },
+      { id: "u1",   metric: "ups",      goal: 1,     icon: "up",    title: "Primera pujada",          desc: "Puja el pes d'un exercici respecte de l'última vegada." },
+      { id: "u5",   metric: "ups",      goal: 5,     icon: "up",    title: "5 pujades",               desc: "Cinc pujades de pes." },
+      { id: "u15",  metric: "ups",      goal: 15,    icon: "up",    title: "15 pujades",              desc: "Quinze pujades de pes." },
+      { id: "u30",  metric: "ups",      goal: 30,    icon: "up",    title: "30 pujades",              desc: "Trenta pujades de pes." },
+      { id: "m1",   metric: "maxed",    goal: 1,     icon: "bars",  title: "Al sostre",               desc: "Totes les sèries d'un exercici al màxim de repeticions." },
+      { id: "m10",  metric: "maxed",    goal: 10,    icon: "bars",  title: "10 cops al sostre",       desc: "Deu exercicis amb totes les sèries al màxim." },
+      { id: "w1",   metric: "weeks",    goal: 1,     icon: "cal",   title: "Setmana completa",        desc: "Torso A, Cama A, Torso B i Cama B en una mateixa setmana." },
+      { id: "w4",   metric: "weeks",    goal: 4,     icon: "cal",   title: "Quatre setmanes completes", desc: "Quatre setmanes amb les quatre sessions de força." },
+      { id: "v1",   metric: "volume",   goal: 1000,  icon: "plate", title: "Una tona",                desc: "1.000 kg moguts, sumant pes per repeticions." },
+      { id: "v10",  metric: "volume",   goal: 10000, icon: "plate", title: "10 tones",                desc: "10.000 kg moguts." },
+      { id: "v50",  metric: "volume",   goal: 50000, icon: "plate", title: "50 tones",                desc: "50.000 kg moguts." },
+      { id: "f25",  metric: "gain",     goal: 25,    icon: "db",    title: "Un 25 % més fort",        desc: "Un exercici un 25 % per sobre del primer pes que hi vas apuntar." }
+    ];
+
+    // Recorre l'historial per ordre de data i calcula xifres, trofeus (amb el dia que es van guanyar),
+    // pujades de pes de cada dia i rècords per exercici.
+    function computeProgress(h) {
+      const days = Object.keys(h).filter(k => h[k] && Object.keys(h[k]).length).sort();
+      const s = { sessions: 0, streak: 0, best: 0, ups: 0, maxed: 0, weeks: 0, volume: 0, gain: 0 };
+      const earned = {}, upsByDay = {}, records = {}, lastW = {}, firstW = {}, weekSets = {}, weeksDone = new Set();
+      let prev = null;
+      for (const day of days) {
+        const d = parseKey(day);
+        s.streak = prev && dateKey(addDays(prev, 1)) === day ? s.streak + 1 : 1;
+        s.best = Math.max(s.best, s.streak);
+        prev = d;
+        for (const key of Object.keys(h[day])) {
+          s.sessions++;
+          if (STRENGTH.includes(key)) {
+            const wk = weekKey(d);
+            (weekSets[wk] = weekSets[wk] || new Set()).add(key);
+            if (weekSets[wk].size === STRENGTH.length && !weeksDone.has(wk)) { weeksDone.add(wk); s.weeks++; }
+          }
+          for (const e of (h[day][key].ex || [])) {
+            const reps = (e.r || []).filter(v => typeof v === "number" && v > 0);
+            if (e.r && e.r.length && e.r.every(v => typeof v === "number" && v >= e.max)) s.maxed++;
+            if (!(e.w > 0) || !reps.length) continue;
+            s.volume += e.w * reps.reduce((a, b) => a + b, 0);
+            if (lastW[e.n] != null && e.w > lastW[e.n]) {
+              s.ups++;
+              (upsByDay[day] = upsByDay[day] || []).push({ n: e.n, from: lastW[e.n], to: e.w });
+            }
+            lastW[e.n] = e.w;
+            if (firstW[e.n] == null) firstW[e.n] = e.w;
+            if (!records[e.n] || e.w > records[e.n].w) records[e.n] = { w: e.w, day, first: firstW[e.n] };
+            s.gain = Math.max(s.gain, Math.round((e.w / firstW[e.n] - 1) * 100));
+          }
+        }
+        TROPHIES.forEach(t => { if (!earned[t.id] && s[t.metric] >= t.goal) earned[t.id] = day; });
+      }
+      const today = dateKey(new Date()), yesterday = dateKey(addDays(new Date(), -1));
+      const last = days[days.length - 1];
+      const current = (last === today || last === yesterday) ? s.streak : 0;
+      return { s, current, earned, upsByDay, records, days };
+    }
+
+    // ---------- Vista de progrés ----------
+    let calMonth = (() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); })();
+    let selectedDay = dateKey(new Date());
+
+    function renderProgress() {
+      const h = loadHistory();
+      const prog = computeProgress(h);
+      renderStreaks(prog, h);
+      renderCalendar(prog, h);
+      renderDayDetail(prog, h);
+      renderTrophies(prog);
+      renderRecords(prog);
+    }
+
+    function renderStreaks(prog, h) {
+      const now = new Date();
+      const monthPrefix = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}`;
+      const thisMonth = prog.days.filter(k => k.startsWith(monthPrefix)).reduce((n, k) => n + Object.keys(h[k]).length, 0);
+      const trainedToday = !!h[dateKey(now)];
+      const streakText = prog.current === 1 ? "dia seguit" : "dies seguits";
+      const hint = `${streakText}${trainedToday ? "" : ". Entrena avui per no perdre-la"}`;
+      $("#streaks").innerHTML = `
+        <div class="panel stat stat-main${prog.current ? "" : " is-off"}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true">${ICONS.flame}</svg>
+          <b>${prog.current}</b>
+          <span>${prog.current ? hint : "Desa una sessió per començar la ratxa"}</span>
+        </div>
+        <div class="panel stat"><b>${prog.s.best}</b><span>millor ratxa</span></div>
+        <div class="panel stat"><b>${thisMonth}</b><span>${thisMonth === 1 ? "sessió" : "sessions"} aquest mes</span></div>`;
+    }
+
+    function renderCalendar(prog, h) {
+      const y = calMonth.getFullYear(), m = calMonth.getMonth();
+      $("#cal-title").textContent = `${cap(MONTHS[m])} de ${y}`;
+      const offset = (new Date(y, m, 1).getDay() + 6) % 7;
+      const daysInMonth = new Date(y, m + 1, 0).getDate();
+      const today = dateKey(new Date());
+      const trophyDays = new Set(Object.values(prog.earned));
+      let html = ["Dl", "Dt", "Dc", "Dj", "Dv", "Ds", "Dg"].map(d => `<span class="cal-wd" aria-hidden="true">${d}</span>`).join("");
+      html += '<span class="cal-blank"></span>'.repeat(offset);
+      for (let day = 1; day <= daysInMonth; day++) {
+        const key = `${y}-${pad2(m + 1)}-${pad2(day)}`;
+        const sessions = h[key] ? Object.keys(h[key]) : [];
+        const names = sessions.map(k => dayInfo(k)?.name || k);
+        const label = `${longDate(key)}${names.length ? ": " + names.join(", ") : ""}${trophyDays.has(key) ? ", trofeu" : ""}`;
+        html += `<button class="cal-day${sessions.length ? " has" : ""}${key === today ? " is-today" : ""}${trophyDays.has(key) ? " has-trophy" : ""}"
+                   data-day="${key}" aria-pressed="${key === selectedDay}" aria-label="${esc(label)}">
+                   <span>${day}</span>
+                   <span class="cal-marks">${sessions.map(k => `<i${STRENGTH.includes(k) ? "" : ' class="is-rec"'}></i>`).join("")}</span>
+                 </button>`;
+      }
+      $("#cal-grid").innerHTML = html;
+    }
+
+    function renderDayDetail(prog, h) {
+      const key = selectedDay;
+      const entry = h[key] || {};
+      const keys = Object.keys(entry);
+      const today = dateKey(new Date());
+      const ups = prog.upsByDay[key] || [];
+      const won = TROPHIES.filter(t => prog.earned[t.id] === key);
+      let html = `<h3 class="dd-title">${longDate(key)}</h3>`;
+
+      if (!keys.length) {
+        const plan = PLAN_BY_WEEKDAY[parseKey(key).getDay()];
+        html += key < today
+          ? '<p class="dd-note">Aquest dia no hi ha cap entrenament desat.</p>'
+          : `<div class="dd-plan"><p>${key === today ? "Avui toca" : "Previst"}: <b>${esc(dayInfo(plan).name)}</b></p>
+               <button class="dd-open" data-open="${plan}">Obre la sessió</button></div>`;
+      }
+
+      keys.forEach(k => {
+        const rows = (entry[k].ex || []).map(e => {
+          const reps = (e.r || []).map(v => v == null ? "–" : num.format(v));
+          const done = (e.r || []).some(v => v != null);
+          if (!done) return "";
+          const up = ups.find(u => u.n === e.n);
+          const target = String((routineData[k]?.exercises || []).find(x => x.name === e.n)?.targetReps || "");
+          const unit = /min$/.test(target) ? "min" : /^\d+s$/.test(target) ? "s" : "reps";
+          const sub = [`${reps.join(", ")} ${unit}`];
+          if (STRENGTH.includes(k) && !isNaN(e.rir)) sub.push(`RIR ${e.rir}`);
+          return `<li class="dd-ex">
+              <span class="dd-ex-name">${esc(e.n)}</span>
+              <span class="dd-ex-w">${e.w > 0 ? kg(e.w) : ""}</span>
+              <span class="dd-ex-sub">${sub.join(", ")}${up ? ` <span class="dd-up">+${esc(kg(up.to - up.from))}</span>` : ""}</span>
+            </li>`;
+        }).join("");
+        html += `<div class="dd-session">
+            <div class="dd-head">
+              <span class="dd-name">${esc(dayInfo(k)?.name || k)}</span>
+              <button class="dd-del" data-del="${k}">Esborra</button>
+            </div>
+            <ul class="dd-list">${rows || '<li class="dd-note">Sense sèries apuntades.</li>'}</ul>
+          </div>`;
+      });
+
+      if (won.length) html += `<div class="dd-trophies">${won.map(t => `<span>${esc(t.title)}</span>`).join("")}</div>`;
+      $("#day-detail").innerHTML = html;
+    }
+
+    function renderTrophies(prog) {
+      const got = TROPHIES.filter(t => prog.earned[t.id]).length;
+      $("#trophy-count").textContent = `${got} de ${TROPHIES.length}`;
+      // Primer els guanyats (el més recent davant), després els pendents pel que falta menys
+      const list = TROPHIES.map(t => ({ t, day: prog.earned[t.id], p: Math.min(1, prog.s[t.metric] / t.goal) }))
+        .sort((a, b) => (b.day ? 1 : 0) - (a.day ? 1 : 0) || (a.day && b.day ? b.day.localeCompare(a.day) : b.p - a.p));
+      $("#trophies").innerHTML = list.map(({ t, day, p }) => {
+        const val = prog.s[t.metric];
+        const shown = t.metric === "volume" ? `${num.format(Math.min(val, t.goal))} de ${num.format(t.goal)} kg`
+                    : t.metric === "gain" ? `${Math.max(0, Math.min(val, t.goal))} % de ${t.goal} %`
+                    : `${Math.min(val, t.goal)} de ${t.goal}`;
+        return `<article class="panel trophy${day ? " got" : ""}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[t.icon]}</svg>
+            <h3>${esc(t.title)}</h3>
+            <p>${esc(t.desc)}</p>
+            ${day ? `<span class="when">Guanyat el ${shortDate(day)}</span>`
+                  : `<span class="bar" aria-hidden="true"><i style="--p:${Math.round(p * 100)}%"></i></span><span class="count">${shown}</span>`}
+          </article>`;
+      }).join("");
+      revealEls(".trophy");
+    }
+
+    function renderRecords(prog) {
+      const names = Object.keys(prog.records);
+      if (!names.length) {
+        $("#records").innerHTML = '<p class="empty-note">Quan desis sessions amb pes, aquí veuràs el millor pes de cada exercici i quant ha pujat des del primer dia.</p>';
+        return;
+      }
+      $("#records").innerHTML = names.map(n => {
+        const r = prog.records[n];
+        const gain = Math.round((r.w / r.first - 1) * 100);
+        return `<div class="rec">
+            <span class="rec-name">${esc(n)}</span>
+            <span class="rec-w">${kg(r.w)}</span>
+            <span class="rec-sub">El ${shortDate(r.day)}${gain > 0 ? `. Va començar a ${kg(r.first)}: <b>+${gain} %</b>` : ""}</span>
+          </div>`;
+      }).join("");
+    }
+
+    function setView(view) {
+      document.querySelectorAll(".view-btn").forEach(b => b.setAttribute("aria-pressed", b.dataset.view === view));
+      $("#view-train").hidden = view !== "train";
+      $("#view-progress").hidden = view !== "progress";
+      if (view === "progress") renderProgress();
+    }
+
     // ---------- Avís ----------
     let toastTimer = null;
-    function showToast(text) {
+    function showToast(text, ms = 2600) {
       const t = $("#toast");
       t.textContent = text;
       t.classList.add("is-visible");
       clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => t.classList.remove("is-visible"), 2600);
+      toastTimer = setTimeout(() => t.classList.remove("is-visible"), ms);
     }
 
     // ---------- Esdeveniments ----------
@@ -983,6 +1415,47 @@
         "Si veus això, els avisos de descans t'arribaran.")
         .then(() => showToast("Prova enviada. Hauria d'arribar en uns segons."))
         .catch(() => showToast("No s'ha pogut enviar. Comprova la connexió."));
+    });
+
+    document.querySelector(".views").addEventListener("click", e => {
+      const b = e.target.closest(".view-btn");
+      if (b) setView(b.dataset.view);
+    });
+    $("#cal-prev").addEventListener("click", () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1); renderProgress(); });
+    $("#cal-next").addEventListener("click", () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1); renderProgress(); });
+    $("#cal-grid").addEventListener("click", e => {
+      const b = e.target.closest(".cal-day");
+      if (!b) return;
+      selectedDay = b.dataset.day;
+      document.querySelectorAll(".cal-day").forEach(x => x.setAttribute("aria-pressed", x === b));
+      const h = loadHistory();
+      renderDayDetail(computeProgress(h), h);
+    });
+    $("#day-detail").addEventListener("click", e => {
+      const open = e.target.closest("[data-open]");
+      if (open) {
+        activeTab = open.dataset.open;
+        document.querySelectorAll(".day").forEach(b => b.setAttribute("aria-pressed", b.dataset.key === activeTab));
+        renderWorkout();
+        setView("train");
+        return window.scrollTo({ top: 0 });
+      }
+      const del = e.target.closest("[data-del]");
+      if (!del) return;
+      // Dos tocs: el primer arma el botó, el segon esborra
+      if (!del.classList.contains("is-armed")) {
+        del.classList.add("is-armed");
+        del.textContent = "Toca per confirmar";
+        return setTimeout(() => { if (del.isConnected) { del.classList.remove("is-armed"); del.textContent = "Esborra"; } }, 3500);
+      }
+      const h = loadHistory();
+      if (h[selectedDay]) {
+        delete h[selectedDay][del.dataset.del];
+        if (!Object.keys(h[selectedDay]).length) delete h[selectedDay];
+        saveHistory(h);
+      }
+      renderProgress();
+      showToast("Registre esborrat");
     });
 
     renderDays();

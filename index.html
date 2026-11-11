@@ -338,6 +338,35 @@
     }
     .toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
 
+    /* ---------- Efectes del mediakit de Zenkai3D ---------- */
+    /* Entrada: la capçalera puja en obrir la pàgina; les targetes entren desenfocades i escalonades
+       quan arriben a la pantalla; en passar-hi el ratolí s'aixequen amb vora i halo taronja. */
+    :root { --glow: rgba(232, 102, 26, .4); --ease-out: cubic-bezier(.2, .7, .2, 1); }
+    .verdict { transition: transform .25s var(--ease-out); transform-origin: right center; }
+    @media (prefers-reduced-motion: no-preference) {
+      .masthead > *, .timerbar, .days, .session-head { animation: puja .55s var(--ease-out) both; }
+      .masthead > :nth-child(2) { animation-delay: .05s; }
+      .timerbar { animation-delay: .1s; }
+      .days { animation-delay: .15s; }
+      .session-head { animation-delay: .05s; }
+      @keyframes puja { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+      .ex { transition: transform .25s var(--ease-out), box-shadow .25s; }
+      .ex:not(.in) { opacity: 0; }
+      .ex.in { animation: revela .75s var(--ease-out) backwards; animation-delay: calc(var(--i, 0) * 110ms); }
+      @keyframes revela { from { opacity: 0; filter: blur(12px); transform: translateY(18px) scale(.95); } to { opacity: 1; filter: blur(0); transform: none; } }
+
+      .day, .preset, .rest-btn, .rir span.opt, .alarm-mode span { transition: transform .15s, border-color .2s, background-color .2s; }
+      .day:active, .preset:active, .rest-btn:active { transform: scale(.96); }
+      .rir label:active span.opt, .alarm-mode:active span { transform: scale(.96); }
+    }
+    @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+      .ex.in:hover { transform: translateY(-4px); box-shadow: 0 18px 36px -18px var(--glow), 0 0 0 2px var(--orange), 0 3px 0 var(--charcoal); }
+      .ex.in:hover .verdict { transform: scale(1.08); }
+      .day:not([aria-pressed="true"]):hover { transform: translateY(-1px); }
+      .btn-primary:hover { filter: brightness(1.07); }
+    }
+
     @media (min-width: 720px) {
       .logo { height: 64px; }
       .phase-block { text-align: right; }
@@ -588,6 +617,27 @@
         <p class="storage-note">Les dades es desen només en aquest navegador. Exporta el CSV per guardar-les a Google Drive.</p>`;
 
       data.exercises.forEach((_, i) => checkProgression(i, false));
+      revealCards();
+    }
+
+    // Les targetes entren quan es veuen; les que entren juntes van escalonades (com al mediakit)
+    let revealObserver = null;
+    function revealCards() {
+      const cards = Array.from(document.querySelectorAll(".ex"));
+      const showAll = () => cards.forEach(c => c.classList.add("in"));
+      if (revealObserver) revealObserver.disconnect();
+      if (!("IntersectionObserver" in window)) return showAll();
+      revealObserver = new IntersectionObserver(entries => {
+        let k = 0;
+        entries.forEach(e => {
+          if (!e.isIntersecting) return;
+          e.target.style.setProperty("--i", k++);
+          e.target.classList.add("in");
+          revealObserver.unobserve(e.target);
+        });
+      }, { threshold: .15 });
+      cards.forEach(c => revealObserver.observe(c));
+      setTimeout(showAll, 5000);
     }
 
     // ---------- Doble progressió ----------

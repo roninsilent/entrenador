@@ -373,6 +373,12 @@
     .import-add { height: 46px; padding: 0 16px; background: var(--orange); color: var(--charcoal); border: 0; border-radius: 4px; font-weight: 800; font-size: 1.05rem; }
     .import-skip { height: 46px; padding: 0 14px; background: transparent; color: var(--chalk-dim); border: 2px solid var(--iron-edge); border-radius: 4px; font-weight: 600; font-size: 1rem; }
 
+    .csv-import { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
+    .csv-import p { max-width: 46ch; color: var(--graphite); }
+    .csv-pick { position: relative; display: inline-grid; place-items: center; overflow: hidden; cursor: pointer; }
+    .csv-pick input { position: absolute; inset: 0; opacity: 0; cursor: pointer; font-size: 0; }
+    .csv-pick:focus-within { outline: 3px solid var(--charcoal); outline-offset: 2px; }
+
     /* Ratxa */
     .streak-row { display: grid; grid-template-columns: 1.25fr 1fr 1fr; gap: 8px; }
     .stat { display: grid; align-content: start; gap: 4px; padding: 12px; }
@@ -612,6 +618,12 @@
         <p class="cal-legend"><span><i></i>Força</span><span><i class="is-rec"></i>Recuperació</span><span><i class="star"></i>Trofeu</span></p>
         <div class="day-detail" id="day-detail" aria-live="polite"></div>
       </div>
+    </section>
+    <section class="csv-import" aria-label="Importa un CSV">
+      <p>Tens algun entrenament en un CSV exportat des d'aquí, per exemple al Drive?</p>
+      <label class="btn btn-dark csv-pick">Importa un CSV
+        <input type="file" id="csv-file" accept=".csv,text/csv,text/comma-separated-values">
+      </label>
     </section>
     <section aria-labelledby="trophies-title">
       <h2 class="sec-title" id="trophies-title">Trofeus <small id="trophy-count"></small></h2>
@@ -1258,24 +1270,95 @@
         })
       };
     }
+    // Sessions llegides d'un CSV exportat per l'app (aquesta versió o l'anterior)
+    let csvPending = [];
+
+    function parseCsv(text) {
+      text = text.replace(/^﻿/, "");
+      const firstLine = text.split(/\r?\n/, 1)[0] || "";
+      const sep = (firstLine.match(/;/g) || []).length > (firstLine.match(/,/g) || []).length ? ";" : ",";
+      const rows = []; let row = [], cell = "", quoted = false;
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i];
+        if (quoted) {
+          if (c === '"' && text[i + 1] === '"') { cell += '"'; i++; }
+          else if (c === '"') quoted = false;
+          else cell += c;
+        } else if (c === '"') quoted = true;
+        else if (c === sep) { row.push(cell); cell = ""; }
+        else if (c === "\n" || c === "\r") {
+          if (c === "\r" && text[i + 1] === "\n") i++;
+          row.push(cell); rows.push(row); row = []; cell = "";
+        } else cell += c;
+      }
+      if (cell !== "" || row.length) { row.push(cell); rows.push(row); }
+      return rows.filter(r => r.some(x => x.trim() !== ""));
+    }
+
+    function sessionKeyFromTitle(title) {
+      const t = title.toLowerCase();
+      const exact = Object.keys(routineData).find(k => routineData[k].title.toLowerCase() === t);
+      if (exact) return exact;
+      if (t.includes("recupera")) return "recuperacio";
+      for (const k of STRENGTH) if (t.includes(dayInfo(k).name.toLowerCase())) return k;
+      return null;
+    }
+
+    function readCsvSessions(text, fileName) {
+      const rows = parseCsv(text);
+      if (!rows.length) return [];
+      const head = rows[0].map(x => x.trim().toLowerCase());
+      const col = name => head.findIndex(h => h.startsWith(name));
+      const cSes = col("sessi"), cEx = col("exerc"), cW = col("pes"), cR = head.findIndex(h => h.includes("reps")), cRir = col("rir");
+      if (cSes < 0 || cR < 0) return [];
+      const fileDay = (fileName.match(/(\d{4}-\d{2}-\d{2})/) || [])[1];
+      const groups = {};
+      rows.slice(1).forEach(r => {
+        const key = sessionKeyFromTitle(r[cSes] || "");
+        if (key) (groups[key] = groups[key] || []).push(r);
+      });
+      return Object.keys(groups).map(key => {
+        const ex = routineData[key].exercises.map((def, i) => {
+          const r = groups[key][i] || [];
+          const reps = String(r[cR] || "").split(/[-\/|·\s]+/).map(v => v.trim().replace(",", "."));
+          const w = parseFloat(String(r[cW] ?? "").replace(",", "."));
+          return {
+            n: def.name,
+            w: isNaN(w) ? 0 : w,
+            r: Array.from({ length: def.series }, (_, k) => { const v = parseFloat(reps[k]); return isNaN(v) ? null : v; }),
+            rir: parseInt(r[cRir], 10),
+            max: def.maxReps
+          };
+        });
+        if (!ex.some(e => e.r.some(v => v > 0))) return null;
+        const today = dateKey(new Date());
+        return { key, entry: { t: Date.now(), imported: true, ex }, day: fileDay && fileDay <= today ? fileDay : lastPlannedDay(key) };
+      }).filter(Boolean);
+    }
+
     function renderImports(h) {
       const keys = pendingImports(h);
       document.querySelector('.view-btn[data-view="progress"]').classList.toggle("has-news", keys.length > 0);
       const box = $("#imports");
-      box.hidden = !keys.length;
+      box.hidden = !keys.length && !csvPending.length;
       const today = dateKey(new Date());
-      box.innerHTML = keys.map(key => `
-        <div class="panel import" data-import="${key}">
-          <h2>Entrenament sense data</h2>
-          <p>Tens una sessió de <b>${esc(dayInfo(key).name)}</b> desada d'abans que hi hagués calendari. Tria quin dia la vas fer i s'hi afegirà amb els pesos i les repeticions que hi vas apuntar.</p>
+      const card = (src, key, day, text, idx = "") => `
+        <div class="panel import" data-import="${key}" data-src="${src}" data-idx="${idx}">
+          <h2>${src === "csv" ? "Entrenament del CSV" : "Entrenament sense data"}</h2>
+          <p>${text}</p>
           <div class="import-row">
             <label class="import-date">Dia
-              <input type="date" value="${lastPlannedDay(key)}" max="${today}">
+              <input type="date" value="${day}" max="${today}">
             </label>
             <button class="import-add">Afegeix al calendari</button>
             <button class="import-skip">Descarta</button>
           </div>
-        </div>`).join("");
+        </div>`;
+      box.innerHTML =
+        csvPending.map((c, i) => card("csv", c.key, c.day,
+          `Al CSV hi ha una sessió de <b>${esc(dayInfo(c.key).name)}</b> amb sèries apuntades. Comprova el dia i afegeix-la.`, i)).join("") +
+        keys.map(key => card("local", key, lastPlannedDay(key),
+          `Tens una sessió de <b>${esc(dayInfo(key).name)}</b> desada d'abans que hi hagués calendari. Tria quin dia la vas fer i s'hi afegirà amb els pesos i les repeticions que hi vas apuntar.`)).join("");
     }
 
     function renderProgress() {
@@ -1503,6 +1586,12 @@
       const card = e.target.closest("[data-import]");
       if (!card) return;
       const key = card.dataset.import;
+      const fromCsv = card.dataset.src === "csv";
+      const csvItem = fromCsv ? csvPending[+card.dataset.idx] : null;
+      if (e.target.closest(".import-skip") && fromCsv) {
+        csvPending = csvPending.filter(c => c !== csvItem);
+        return renderProgress();
+      }
       if (e.target.closest(".import-skip")) {
         let skipped = [];
         try { skipped = JSON.parse(localStorage.getItem(IMPORT_SKIP_KEY)) || []; } catch (err) {}
@@ -1515,14 +1604,31 @@
       const h = loadHistory();
       const before = computeProgress(h).earned;
       h[day] = h[day] || {};
-      h[day][key] = entryFromStore(key);
+      h[day][key] = fromCsv ? csvItem.entry : entryFromStore(key);
       if (!saveHistory(h)) return showToast("No s'ha pogut afegir al calendari");
+      if (fromCsv) csvPending = csvPending.filter(c => c !== csvItem);
       selectedDay = day;
       calMonth = new Date(parseKey(day).getFullYear(), parseKey(day).getMonth(), 1);
       renderProgress();
       const after = computeProgress(h).earned;
       const fresh = TROPHIES.filter(t => after[t.id] && !before[t.id]);
       showToast(fresh.length ? `Afegit al ${shortDate(day)}. ${fresh.length === 1 ? "Trofeu nou" : "Trofeus nous"}: ${fresh.map(t => t.title).join(", ")}` : `Afegit al ${shortDate(day)}`, fresh.length ? 5500 : 2600);
+    });
+    $("#csv-file").addEventListener("change", e => {
+      const file = e.target.files && e.target.files[0];
+      e.target.value = "";
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const found = readCsvSessions(String(reader.result || ""), file.name);
+        if (!found.length) return showToast("Aquest CSV no té cap sessió amb sèries apuntades");
+        csvPending = found;
+        renderProgress();
+        window.scrollTo({ top: $("#imports").getBoundingClientRect().top + window.scrollY - 90, behavior: "smooth" });
+        showToast(found.length === 1 ? "He trobat 1 sessió. Comprova el dia i afegeix-la." : `He trobat ${found.length} sessions. Comprova els dies i afegeix-les.`, 4000);
+      };
+      reader.onerror = () => showToast("No s'ha pogut llegir el fitxer");
+      reader.readAsText(file);
     });
     $("#cal-prev").addEventListener("click", () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1); renderProgress(); });
     $("#cal-next").addEventListener("click", () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1); renderProgress(); });
